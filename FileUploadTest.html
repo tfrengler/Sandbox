@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JS File Upload</title>
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+		<meta name="description" content="Async fileupload via JS test" />
+		<meta name="author" content="Thomas Frengler" />
+	</head>
+
+	<body>
+		<form id="FileUploadForm" >
+			<br/>
+			<input type="text" name="text_test1" value="test" /><br/>
+			<input type="text" name="text_test2" value="test" /><br/>
+			<input type="text" name="text_test3" value="test" /><br/>
+
+			<input type="file" name="file1" /><br/>
+			<input type="file" name="file2" /><br/>
+			<input type="file" name="file3" /><br/>
+			<input type="file" name="file4" /><br/>
+			<input type="file" name="file5" /><br/>
+			<br/>
+			<input type="button" value="Submit" name="Submit" onclick="javascript:TotalSize()" />
+		</form>
+	</body>
+
+	<script type="text/javascript">
+		function TotalSize() {
+			var oFileElements = document.querySelectorAll("input[type='file']");
+			var nCombinedFileSizeInBytes = 0;
+			var nCombinedFileSizeInMegabytes = 0;
+			var oCurrentFile = {};
+			var nIterator = 0;
+
+			if (typeof oFileElements == "undefined") {
+				return false;
+			};
+
+			for (; nIterator < oFileElements.length; nIterator++) {
+
+				if (oFileElements[nIterator].files.length > 0) {
+					oCurrentFile = oFileElements[nIterator].files[0];
+					nCombinedFileSizeInBytes += oCurrentFile.size;
+				};
+			};
+
+			if (nCombinedFileSizeInBytes > 0) {
+
+				// Converting from bytes to megabytes
+				nCombinedFileSizeInMegabytes = nCombinedFileSizeInBytes / 1048576;
+				/* Rounding the number down to the nearest two decimal points. This will give weird results with float numbers
+				but for what we are using this for (file sizes) we know we are always going to get integers */
+				nCombinedFileSizeInMegabytes = Math.round(nCombinedFileSizeInMegabytes * 100) / 100; 
+			
+				alert("Total attachment size: " + nCombinedFileSizeInMegabytes + " MB");
+			};
+
+		};
+
+		function PrepareFormData(sFormIdentifier) {
+			var oForm = {};
+			var oFormElements = {};
+			var oReturnData = {};
+			var oCatchError = {};
+			var nIterator = 0
+			var oCurrentFormElement = {};
+
+			try {
+				oForm = document.querySelector(sFormIdentifier);
+			}
+			catch(oCatchError) {
+				console.log(oCatchError);
+				return false;
+			};
+
+			if (typeof oForm == "undefined") {
+				return false;
+			};
+
+			oReturnData = new FormData(oForm); 
+			/* This is much much easier and leaves out the buttons as well. It does include all elements regardless of whether they are empty or not. 
+			It also uses the "name" of the element as the key in the key/value-pairs. So if you don't want any of this behaviour you'll have to write your own routine */
+
+			/*
+			oFormElements = oForm.elements;
+
+			if (oFormElements.length && oFormElements.length > 0) {
+
+				for (; nIterator < oFormElements.length; nIterator++) {
+
+					oCurrentFormElement = oFormElements[nIterator];
+					switch(oCurrentFormElement.type) {
+						case "file":
+							if (oCurrentFormElement.files.length && oCurrentFormElement.files.length == 1) {
+								oReturnData.append(oCurrentFormElement.name, oCurrentFormElement.files[0]);
+							};
+							break;
+						default:
+							if (	oCurrentFormElement.value != "" 
+								&& oCurrentFormElement.value.length > 0
+								&& oCurrentFormElement.type !="button"	) {
+
+								oReturnData.append(oCurrentFormElement.name, oCurrentFormElement.value);
+							};
+					};
+				}
+			};
+			*/
+			return oReturnData;
+		};
+	</script>
+
+</html>

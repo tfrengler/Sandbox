@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>SANDBOX</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta name="author" content="Thomas Frengler" />
+
+	<script type="text/javascript" src="jquery.min.js" ></script>
+	<script type="text/javascript" src="jquery-ui/jquery-ui.min.js" ></script>
+
+	<script type="text/javascript">
+		"use strict";
+
+		// Const ensures the variable cannot be reassigned or mutated
+		// The evaluation of a self-executing anonymous function is what allows us to create private properties (module pattern)
+		const Messages = (function() {
+
+			// Public methods, though right now due to the var-scoping it's actually private.
+			// We can make it public by returning a reference to it in the return statement
+			var iAmPublic = 42;
+
+			// Private vars
+			var messageQueue = [];
+			var processing = false;
+
+			// Private methods
+			var hasNext = function() {
+				return (messageQueue.length > 0)
+			};
+
+			var next = function() {
+				return messageQueue[0]
+			};
+
+			var removeMessage = function() {
+				messageQueue.shift()
+			};
+
+			var processQueue = function() {
+
+				if (hasNext()) {
+					processing = true;
+					handleMessage(next());
+					return true;
+				} else {
+					processing = false;
+					return false;
+				}
+
+			};
+
+			var handleMessage = function(message) {
+				var MessageBox = $("#MessageBox");
+				MessageBox.html(message);
+
+				new Promise(function(resolve, reject) {
+
+					if (MessageBox.length === 1 && MessageBox.fadeIn !== undefined) {
+						MessageBox.fadeIn(2000, resolve)
+					} else {
+						reject(Error("Internal error: message box couldn't be found or fadeIn() is not a function"))
+					}
+
+				}).then(function() {
+
+					return new Promise(function(resolve, reject) {
+
+						if (MessageBox.length === 1 && MessageBox.fadeOut !== undefined) {
+							MessageBox.delay(2000).fadeOut(2000, resolve)
+						} else {
+							reject(Error("Internal error: message box couldn't be found or fadeOut() is not a function"))
+						}
+					})
+
+				}).then(function() {
+					removeMessage();
+					processQueue();
+				});
+	
+			};
+
+			// Public methods! Everything you return from this anonymous function will be publicly available!
+			// For good meassure we freeze this returned object, otherwise you can add properties to it!
+			// Seal() still allows you to mutate an object/structs methods and properties, but you can't remove them or add new ones
+			// Freeze() makes them immutable. This prevents you from changing the public variable but you should use getters and setters anyway ;)
+			return Object.freeze({
+
+				// References to private vars make them effectively public. Not only can you see them, you can also mutate them
+				queueLength: messageQueue.length,
+				
+				add: function(message) {
+					messageQueue.push(message);
+
+					if (processing) {
+						return;
+					} else {
+						processQueue();
+					}
+				},
+
+				getQueue: function() {
+					return messageQueue;
+				}
+
+			})
+		})(); // Remember the () to ensure the anonymous function executes when the script is evaluated
+
+	</script>
+
+	<style type="text/css">
+		#MessageBox {
+			border-radius: 0 0 0.7em 0.7em;
+			border-color: black;
+			border-style: solid;
+			border-width: 0px 2px 2px 2px;
+			padding: 0.3em;
+			display: inline-block;
+			background-color: green;
+			color: white;
+			display: none;
+		}
+	</style>
+</head>
+
+	<body>
+		<div id="MessageBox"></div>
+
+		<p>
+			Sandbox test showing off:
+			<ol>
+				<li>A functional, async messaging system</li>
+				<li>Using Promises to power the above</li>
+				<li>Using const to ensure the messaging pointer can't be mutated</li>
+				<li>Using the module pattern (utilizing closures) to create private vars and methods for the messaging system</li>
+			</ol>
+		</p>
+	</body>
+
+</html>
