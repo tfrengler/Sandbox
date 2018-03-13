@@ -100,7 +100,7 @@
 				},
 
 				getQueue: function() {
-					return messageQueue;
+					return Object.freeze(messageQueue); // If we don't freeze this we can actually use the reference returned to manipulate the variable
 				}
 
 			})
@@ -132,6 +132,7 @@
 				<li>A functional, async messaging system</li>
 				<li>Using Promises to power the above</li>
 				<li>Using const to ensure the messaging pointer can't be mutated</li>
+				<li>Using Object.freeze() to ensure object properties can't be added, removed, reassigned or mutated</li>
 				<li>Using the module pattern (utilizing closures) to create private vars and methods for the messaging system</li>
 			</ol>
 		</p>

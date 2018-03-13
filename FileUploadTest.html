@@ -2,9 +2,11 @@
 <html>
 	<head>
 		<title>JS File Upload</title>
+
 		<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-		<meta name="description" content="Async fileupload via JS test" />
 		<meta name="author" content="Thomas Frengler" />
+
+		<script type="text/javascript" src="jquery.min.js" ></script>
 	</head>
 
 	<body>
@@ -20,12 +22,16 @@
 			<input type="file" name="file4" /><br/>
 			<input type="file" name="file5" /><br/>
 			<br/>
-			<input type="button" value="Submit" name="Submit" onclick="javascript:TotalSize()" />
+			<input type="button" value="Submit" name="Submit" onclick="TotalSize()" />
 		</form>
 	</body>
 
 	<script type="text/javascript">
-		function TotalSize() {
+		"use strict";
+
+		var ajaxCallInProgress = false;
+
+		const TotalSize = function() {
 			var oFileElements = document.querySelectorAll("input[type='file']");
 			var nCombinedFileSizeInBytes = 0;
 			var nCombinedFileSizeInMegabytes = 0;
@@ -57,7 +63,7 @@
 
 		};
 
-		function PrepareFormData(sFormIdentifier) {
+		const PrepareFormData = function(sFormIdentifier) {
 			var oForm = {};
 			var oFormElements = {};
 			var oReturnData = {};
@@ -107,6 +113,47 @@
 			};
 			*/
 			return oReturnData;
+		};
+
+		const uploadPicture = function(ControllerArguments) {
+
+			var AjaxQueryString = "";
+			var FormToPost = new FormData(
+				document.getElementById("FileUploadForm")
+			);
+
+			if (ajaxCallInProgress === false) {
+				ajaxCallInProgress = true
+			} else {
+				return false;
+			};
+
+			AjaxQueryString = "Components/AjaxProxy.cfc?method=callWithFileUpload&controller=ChangeRecipePicture";
+			AjaxQueryString = (AjaxQueryString + "&authKey=" + "very_secret_auth_key_for_test_purposes");
+
+			if (typeof ControllerArguments === "Object" && Object.keys(ControllerArguments) > 0) {
+				AjaxQueryString = (AjaxQueryString + "&parameters=" + encodeURIComponent(JSON.stringify(ControllerArguments)));
+			};
+
+			$.ajax({
+				type: "POST",
+				timeout: 30000,
+				url: AjaxQueryString, // Any parameters you want to send to a function/method on the receiving page HAS to be in the URL-scope
+				dataType: "json",
+				enctype: "multipart/form-data", // Required for file posting via AJAX to work
+				processData: false, // Required for file posting via AJAX to work
+				contentType: false, // Required for file posting via AJAX to work
+				data: FormToPost,
+
+				error: function() {
+					window.alert("FAILED!");
+					console.warn(arguments);
+				},
+				success: function() {
+					window.alert("SUCCESS!");
+				}
+
+			});
 		};
 	</script>
 
