@@ -122,8 +122,6 @@
 			<cfset CfsetVarNameCapture = "\w+(?=\s+=)" />
 			<cfset CfSetCapture = "<cfset\b(?!(\s*\w+\()|\s*\w+\.\w+\()\s*\w+\s*=" />
 			<cfset FunctionCapture = "<cffunction[\S\s]+?</cffunction>" />
-			<cfset CfloopIndexPattern = "<cfloop(?=.+?(?=index=)).+?>" />
-			<cfset CfloopItemPattern = "<cfloop(?=.+?(?=item=)).+?>" />
 			<!--- <cfset FunctionNameCapture = "(?<=name=[""|'])(\w+)(?=[""|'])" />  No lookbehind in CF sadly --->
 			<cfset FunctionNameCapture = "name=""(.+?)""" />
 			<cfset LoopCounter = 0 />
