@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Table Drag and Drop</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta name="author" content="Thomas Frengler" />
+
+	<style type="text/css">
+		table {
+			margin-left: auto;
+			margin-right: auto;
+			margin-top: 10em;
+		}
+
+		tbody tr.normal:nth-child(odd) {
+			background-color: #6495ED;
+			color: white;
+		}
+
+		.highlighted {
+			background-color: green;
+			color: white;
+		}
+
+		.beingMoved {
+			background-color: grey;
+			color: lightgrey;
+			font-style: italic;
+		}
+	</style>
+
+	<script type="text/javascript" >
+		const onDragElement = function(event) {
+			event.dataTransfer.dropEffect = "move";
+			event.dataTransfer.effectAllowed = "move";
+
+			event.target.classList.remove("normal");
+			event.target.classList.add("beingMoved");
+
+			event.dataTransfer.setData("text/html", event.target.innerHTML);
+			event.dataTransfer.setData("application/id", event.target.id);
+		};
+
+		const onDrop = function(event) {
+			event.preventDefault();
+			event.dataTransfer.dropEffect = "move";
+
+			const elementDroppedOn = (event.target.nodeName === "TR" ? event.target : event.target.parentElement);
+			elementDroppedOn.classList.remove("highlighted");
+			elementDroppedOn.classList.add("normal");
+
+			if (elementDroppedOn.nodeName !== "TR") {
+				console.error("Not a TR, wut? " + elementDroppedOn.nodeName);
+				return;
+			}
+
+			const draggedElementID = event.dataTransfer.getData("application/id");
+			if (elementDroppedOn.id === draggedElementID) return;
+
+			const element = document.createElement("tr");
+			element.classList.add("normal");
+			element.innerHTML = event.dataTransfer.getData("text/html");
+
+			const tableBody = document.getElementById("OurTableBody");
+			tableBody.insertBefore(element, elementDroppedOn);
+			tableBody.removeChild( document.getElementById(draggedElementID) );
+
+			element.id = draggedElementID; // Don't add the ID before we remove the old element or we'll remove the new element :/
+			addDragAndDropEventHandlers(element);
+		};
+
+		const onDragEnter = function(event) {
+			event.preventDefault();
+
+			const target = (event.target.nodeName === "TR" ? event.target : event.target.parentElement);
+			if (target.classList.contains("beingMoved")) return;
+
+			target.classList.remove("normal");
+			target.classList.add("highlighted");
+		};
+
+		const onDragLeave = function(event) {
+			event.preventDefault();
+
+			const target = (event.target.nodeName === "TR" ? event.target : event.target.parentElement);
+			if (target.classList.contains("beingMoved")) return;
+
+			target.classList.remove("highlighted");
+			target.classList.add("normal");
+		};
+
+		const onDragOver = function(event) {
+			event.preventDefault();
+		};
+
+		const onDragEnd = function(event) {
+			event.preventDefault();
+			if (!document.getElementById(event.target.id)) return;
+			
+			const target = (event.target.nodeName === "TR" ? event.target : event.target.parentElement);
+			target.classList.add("normal");
+			target.classList.remove("beingMoved");
+		};
+
+		const addDragAndDropEventHandlers = function(element) {
+			element.draggable = true;
+			element.querySelectorAll("td").forEach((element)=> element.draggable = false);
+
+			element.addEventListener("dragstart", onDragElement);
+			element.addEventListener("dragenter", onDragEnter);
+			element.addEventListener("drop", onDrop);
+			element.addEventListener("dragover", onDragOver);
+			element.addEventListener("dragleave", onDragLeave);
+			element.addEventListener("dragend", onDragEnd);
+		};
+
+		window.onload = () => {
+
+			document.querySelectorAll("tbody tr").forEach((element)=> addDragAndDropEventHandlers(element));
+			console.log("Init done");
+		};
+	</script>
+
+</head>
+
+<body>
+
+	<table id="OurTable" border="1" >
+
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>1st column</th>
+				<th>2nd column</th>
+				<th>3rd column</th>
+			</tr>
+		</thead>
+
+		<tbody id="OurTableBody">
+			<tr id="Song1" class="normal" >
+				<td>1</td>
+				<td>Devin Townsend Project</td>
+				<td>Praise the Lowered</td>
+				<td>5:57</td>
+			</tr>
+
+			<tr id="Song2" class="normal" >
+				<td>2</td>
+				<td>Devin Townsend Project</td>
+				<td>Stand</td>
+				<td>9:36</td>
+			</tr>
+
+			<tr id="Song3" class="normal" >
+				<td>3</td>
+				<td>Devin Townsend Project</td>
+				<td>Juular</td>
+				<td>3:45</td>
+			</tr>
+
+			<tr id="Song4" class="normal" >
+				<td>4</td>
+				<td>Devin Townsend Project</td>
+				<td>Planet of the Apes</td>
+				<td>10:59</td>
+			</tr>
+
+			<tr id="Song5" class="normal" >
+				<td>5</td>
+				<td>Devin Townsend Project</td>
+				<td>Sumeria</td>
+				<td>6:36</td>
+			</tr>
+
+			<tr id="Song6" class="normal" >
+				<td>6</td>
+				<td>Devin Townsend Project</td>
+				<td>The Mighty Masturbator</td>
+				<td>16:28</td>
+			</tr>
+
+			<tr id="Song7" class="normal" >
+				<td>7</td>
+				<td>Devin Townsend Project</td>
+				<td>Deconstruction</td>
+				<td>9:26</td>
+			</tr>
+
+			<tr id="Song8" class="normal" >
+				<td>8</td>
+				<td>Devin Townsend Project</td>
+				<td>Poltergeist</td>
+				<td>4:24</td>
+			</tr>
+
+			<tr id="Song9" class="normal" >
+				<td>9</td>
+				<td>Devin Townsend Project</td>
+				<td>Ho Kril</td>
+				<td>5:57</td>
+			</tr>
+		</tbody>
+
+	</table>
+
+</body>
+
+</html>
