@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>TEST</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta name="author" content="Thomas Frengler" />
+
+	<style type="text/css">
+		html, body {
+			height: 100%;
+			width: 100%;
+		}
+
+		canvas {
+			display: inline-block;
+			width: 1024px;
+			height: 768px;
+			border-style: solid;
+			border-color: black;
+			border-width: 2px;
+		}
+	</style>
+
+	<script type="text/javascript" src="vector.js"></script>
+	<script type="text/javascript" src="entity.js"></script>
+	<script type="text/javascript" src="system.js"></script>
+	<script type="text/javascript" src="shapes.js"></script>
+
+	<script type="text/javascript">
+		"use strict";
+
+		var drawContext;
+		var canvas;
+		var mover1;
+		var mover2
+		var output;
+		var target;
+		var running = false;
+		var mouseIsDown = false;
+		var canvasOffsets = Object.seal({
+			x: 0,
+			y: 0
+		});
+
+		const computeCanvasOffsets = function() {
+			let canvasStyles = getComputedStyle(canvas);
+			let borderWidthTop = parseInt(canvasStyles.borderTopWidth);
+			let borderWidthBottom = parseInt(canvasStyles.borderBottomWidth);
+			let borderWidthLeft = parseInt(canvasStyles.borderLeftWidth);
+			let borderWidthRight = parseInt(canvasStyles.borderRightWidth);
+
+			let paddingWidthTop = parseInt(canvasStyles.paddingTop);
+			let paddingWidthBottom = parseInt(canvasStyles.paddingBottom);
+			let paddingWidthLeft = parseInt(canvasStyles.paddingLeft);
+			let paddingWidthRight = parseInt(canvasStyles.paddingRight);
+
+			let canvasBoxDimensions = canvas.getBoundingClientRect();
+			// The scale is for interpolating between the actual dimensions of the canvas (on the screen) and the size of the draw buffer
+			let scaleX = canvas.width / (borderWidthLeft + borderWidthRight) + canvasBoxDimensions.width + (paddingWidthLeft + paddingWidthRight); // relationship bitmap vs. element for X
+      		let scaleY = canvas.height / (borderWidthTop + borderWidthBottom) + canvasBoxDimensions.height + (paddingWidthTop + paddingWidthBottom);  // relationship bitmap vs. element for Y
+
+			canvasOffsets.x = borderWidthLeft + canvasBoxDimensions.left + (paddingWidthLeft + paddingWidthRight) * scaleX;
+			canvasOffsets.y = borderWidthTop + canvasBoxDimensions.top + (paddingWidthTop + paddingWidthBottom) * scaleY;
+
+			console.log("Canvas offsets computed");
+		};
+
+		window.onload = function() {
+
+			canvas = document.getElementById("canvas");
+			drawContext = canvas.getContext("2d");
+			output = document.getElementById("output");
+
+			window.addEventListener("resize", computeCanvasOffsets);
+
+			document.getElementById("run").addEventListener("click", (event)=> {
+				if (running === true) return;
+
+				running = true;
+				main(false);
+			});
+			document.getElementById("pause").addEventListener("click", (event)=> {
+				running = false;
+			});
+			document.getElementById("step").addEventListener("click", (event)=> {
+				if (running === true) return;
+				running = true;
+				main(true);
+			});
+			document.getElementById("reset").addEventListener("click", (event)=> {
+				running = false;
+				setup();
+			});
+
+			canvas.addEventListener("mousemove", (event)=> {
+				let realX = event.clientX - canvasOffsets.x;
+				let realY = event.clientY - canvasOffsets.y;
+
+				output.innerText = `X: ${realX} | Y: ${realY}`;
+
+				if (mouseIsDown)
+					target = new Vector(realX, realY);
+			});
+
+			canvas.addEventListener("mousedown", (event)=> {
+				mouseIsDown = true;
+			});
+
+			canvas.addEventListener("mouseup", (event)=> {
+				mouseIsDown = false;
+				target = null;
+			});
+
+			// Setting the draw buffer size, scaled to the pixel depth of the device
+			canvas.width = canvas.clientWidth * window.devicePixelRatio;
+			canvas.height = canvas.clientHeight * window.devicePixelRatio;
+
+			// Normalize coordinate system to use css pixels.
+			drawContext.scale(window.devicePixelRatio, window.devicePixelRatio);
+			computeCanvasOffsets();
+
+			setup();
+			console.log("Ready!");
+		};
+
+		const setup = function() {
+			mover1 = new Entity(new Vector(canvas.width / 2, canvas.height / 2), 7, 20, new Square(50));
+			mover2 = new Entity(new Vector(canvas.width / 2 + 60, canvas.height / 2), 7, 0.1, new Circle(50, null, "green"));
+
+			System.render([mover1, mover2]);
+		};
+
+		const main = function(step) {
+			if (!running) return false;
+
+			let parameters = [[mover1, mover2], target || null];
+			System.update.apply(System, parameters);
+
+			if (step === true) {
+				running = false;
+				return;
+			};
+			
+			window.requestAnimationFrame(main);
+		};
+	</script>
+</head>
+
+	<body>
+		<canvas id="canvas" ></canvas>
+		<span id="output" ></span><br/>
+
+		<button id="run">RUN</button>
+		<button id="pause">PAUSE</button>
+		<button id="step">STEP FORWARD</button>
+		<button id="reset">RESET</button>
+	</body>
+
+</html>
