@@ -21,9 +21,10 @@ This is simply a repo for me dumping things I am testing and messing with at any
 **SimpleJavaMail (Coldfusion/Java)**: A prototype built for my work as we had trouble getting Lucee to support TLS 1.2. Using a library to send the emails instead of the internal cfmail-tag was the only workaround, hence why we went with this solution. The most difficult part was getting SimpleJavaMail to pick up and use its own bundled versions of javax.mail and javax.activation, as they would constantly be overruled by Lucee's internal versions. As usual, Mark Mandel's awesome Javaloader saved the day.
 
 **StreamTest (Javascript)**: A test where I manually stream an audio file using fetch() and range-byte headers. It's based on a lot of methods that are still in draft and thus subject to bugs, different browsers implementations and possible changes. It uses an HTMLMediaElement, coupled with a MediaSource where data fetched in chunks (as arrayBuffers) are added/appended to the MediaSource's sourceBuffer. It works pretty damn well but there are a few caveats:
-
-**TableDragAndDrop (Javascript)**: Another drag and drop prototype, but where the previous one had to do with uploading files, this was for re-arranging HTML-elements, specifically rows in a table
-
 * It only works on Chrome. FF has multiple bugs and doesn't support decoding MP3 in sourceBuffers apparently
 * Audio filesize: sourceBuffer's for audio can only hold about 12-15 MB (depending on browser). So if you want to stream a bigger file than that you'll have to stagger the internal buffering of the sourceBuffer depending on where the current play-time is, and/or remove data from the sourceBuffer that the play-time has passed. Either way, it's complicated - even more so if you want to support seeking.
 * If you want to copy this example wholesale you obviously need to replace FETCH_ENTRY_POINT with a file/URL that returns an audio file for it to work
+
+**TableDragAndDrop (Javascript)**: Another drag and drop prototype, but where the previous one had to do with uploading files, this was for re-arranging HTML-elements, specifically rows in a table
+
+**Physics-folder (Javascript)** My own implementation of Nature of Code (https://natureofcode.com/book/), with the aim of making some small, prototype physics-based game
