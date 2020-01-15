@@ -32,8 +32,8 @@
 
 		var drawContext;
 		var canvas;
-		var mover1;
-		var mover2
+		var objects = [];
+		var direction;
 		var output;
 		var target;
 		var running = false;
@@ -125,16 +125,18 @@
 		};
 
 		const setup = function() {
-			mover1 = new Entity(new Vector(canvas.width / 2, canvas.height / 2), 7, 20, new Square(50));
-			mover2 = new Entity(new Vector(canvas.width / 2 + 60, canvas.height / 2), 7, 0.1, new Circle(50, null, "green"));
+			objects = [];
+			objects.push(new Entity(new Vector(canvas.width / 2, canvas.height / 2), 7, 1.1, new Square(50)));
+			objects.push(new Entity(new Vector(canvas.width / 2 + 60, canvas.height / 2), 7, 3, new Circle(50, null, "green")));
+			direction = new Vector();
 
-			System.render([mover1, mover2]);
+			System.render(objects);
 		};
 
 		const main = function(step) {
 			if (!running) return false;
 
-			let parameters = [[mover1, mover2], target || null];
+			let parameters = [objects, target || null];
 			System.update.apply(System, parameters);
 
 			if (step === true) {

@@ -11,7 +11,7 @@ class Entity {
 		
 		this.mass = mass || 0.0;
 		this.maxSpeed = maxSpeed || 0.0;
-		this.collision = false;
+		this.collision = 0;
 
 		this.angle = 0;
 		this.angleVelocity = 0;
