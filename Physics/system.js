@@ -17,10 +17,9 @@ class System {
 			if (target)
 				entity.acceleration = this.getAcceleration(entity, target);
 
-			this.applyForce(entity, new Vector(System.wind, 0)); // Wind
-			let weight = System.gravity * entity.mass;
-			this.applyForce(entity, new Vector(0, weight)); // Gravity
-	  		this.applyForce(entity, this.getDrag(entity, System.airFriction)); // Normal air density friction
+			this.applyForce(entity, this.getDrag(entity, System.airFriction)); // Normal air density friction
+			this.applyForce(entity, new Vector(System.wind, 0)); // Wind, only coming from left or right
+			this.applyForce(entity, new Vector(0, System.gravity * entity.mass)); // Gravity
 
 			entity.velocity.add(entity.acceleration);
 			entity.velocity.limit(entity.maxSpeed);
@@ -61,12 +60,6 @@ class System {
 	}
 
 	static resolveCollision(entity) {
-		// TODO(thomas): Needs to take angle into account...
-		// if (entity.collision === true) {
-		// 	this.applyForce(entity, this.getFriction(entity, 1.5));
-		// 	entity.collision = false;
-		// }
-		
 		// LEFT		| 00011000 | 24
 		if ((entity.collision & 24) === 24) {
 			entity.collision = 0;
@@ -96,11 +89,6 @@ class System {
 			entity.velocity.y *= -1;
 			entity.velocity.y /= entity.mass;
 		}
-			
-		// if (entity.velocity.mag() < 0.1) {
-		// 	entity.velocity.x = 0;
-		// 	entity.velocity.y = 0;
-		// }
 	};
 
 	// TODO(thomas): Maybe make this return data about which axis collided? Set the location but return X or Y? Maybe side?
@@ -134,24 +122,20 @@ class System {
 		// LEFT 00011000
 		if (entity.location.x - leftCalculation < 0) {
 			entity.location.x = leftCalculation + 0;
-			// entity.velocity.x *= -1;
 			entity.collision |= 24;
 		} // RIGHT 00010100
 		else if (entity.location.x + rightCalculation > canvas.width) {
 			entity.location.x = canvas.width - rightCalculation;
-			// entity.velocity.x *= -1;
 			entity.collision |= 20;
 		}
 
 		// BOTTOM 00010001
 		if (entity.location.y + bottomCalculation > canvas.height) {
 			entity.location.y = canvas.height - bottomCalculation;
-			// entity.velocity.y *= -1;
 			entity.collision |= 17;
 		} // TOP 00010010
 		else if (entity.location.y - topCalculation < 0) {
 			entity.location.y = topCalculation;
-			// entity.velocity.y *= -1;
 			entity.collision |= 18;
 		}
 	}
