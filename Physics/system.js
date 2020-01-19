@@ -17,9 +17,10 @@ class System {
 			if (target)
 				entity.acceleration = this.getAcceleration(entity, target);
 
-			this.applyForce(entity, this.getDrag(entity, System.airFriction)); // Normal air density friction
+			this.applyForce(entity, this.getFriction(entity, System.airFriction));
 			this.applyForce(entity, new Vector(System.wind, 0)); // Wind, only coming from left or right
-			this.applyForce(entity, new Vector(0, System.gravity * entity.mass)); // Gravity
+			this.applyForce(entity, new Vector(0, System.gravity * entity.mass)); // Gravity, scaled by mass
+			if ((entity.collision >> 4) === 1) this.resolveCollision(entity);
 
 			entity.velocity.add(entity.acceleration);
 			entity.velocity.limit(entity.maxSpeed);
@@ -29,20 +30,22 @@ class System {
 			// entity.angle += entity.angleVelocity;
 			
 			this.checkCollision(entity);
-			if ((entity.collision >> 4) === 1) this.resolveCollision(entity);
-
 			entity.acceleration.mult(0); // Clear acceleration each time, otherwise it accumulates and goes out of whack
 		});
 
 		this.render(entities);
 	}
 
+	// Coefficient is the strength of a friction force for a particular surface
 	static getFriction(entity, coefficient) {
 		let friction = entity.velocity.copy();
+		// Gravity * mass = weight
+		let normal = (System.gravity * entity.mass) * Math.cos(entity.velocity.heading());
+		// Direction perpendicular to the direction of the vector
 
-		friction.mult(-1);
 		friction.normalize();
-		friction.mult(coefficient);
+		friction.mult(-1);
+		friction.mult(coefficient * normal);
 
 		return friction;
 	}
@@ -63,14 +66,12 @@ class System {
 		// LEFT		| 00011000 | 24
 		if ((entity.collision & 24) === 24) {
 			entity.collision = 0;
-			// entity.location.x = 0;
 			entity.velocity.x *= -1;
 			entity.velocity.x /= entity.mass;
 		}
 		// RIGHT	| 00010100 | 20
 		else if ((entity.collision & 20) === 20) {
 			entity.collision = 0;
-			// entity.location.x = canvas.width;
 			entity.velocity.x *= -1;
 			entity.velocity.x /= entity.mass;
 		}
@@ -78,20 +79,17 @@ class System {
 		// BOTTOM	| 00010001 | 17
 		if ((entity.collision & 17) === 17) {
 			entity.collision = 0;
-			// entity.location.y = canvas.height;
 			entity.velocity.y *= -1;
 			entity.velocity.y /= entity.mass;
 		}
 		// TOP		| 00010010 | 18
 		else if ((entity.collision & 18) === 18) {
 			entity.collision = 0;
-			// entity.location.y = 0;
 			entity.velocity.y *= -1;
 			entity.velocity.y /= entity.mass;
 		}
 	};
 
-	// TODO(thomas): Maybe make this return data about which axis collided? Set the location but return X or Y? Maybe side?
 	static checkCollision(entity) {
 
 		let leftCalculation, rightCalculation, bottomCalculation, topCalculation;
@@ -157,6 +155,7 @@ class System {
 			drawContext.strokeStyle  = entity.shape.borderColor;
 
 			if (["RECTANGLE","SQUARE"].includes(entity.shape.type)) {
+
 				drawContext.rect(
 					Math.floor(entity.location.x - (entity.shape.width / 2)),
 					Math.floor(entity.location.y - (entity.shape.height / 2)),
