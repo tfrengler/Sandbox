@@ -17,7 +17,7 @@ class System {
 			if (target)
 				entity.acceleration = this.getAcceleration(entity, target);
 
-			// this.applyForce(entity, this.getFriction(entity, System.airFriction));
+			this.applyForce(entity, this.getDrag(entity, System.airFriction));
 			this.applyForce(entity, new Vector(System.wind, 0)); // Wind, only coming from left or right
 			this.applyForce(entity, new Vector(0, System.gravity * entity.mass)); // Gravity, scaled by mass
 
@@ -197,6 +197,6 @@ class System {
 
 System.gravity = 0.25;
 System.airFriction = 0.002;
-System.wind = 0.008;
+System.wind = 0.01;
 System.surfaceFriction = 0.004;
 System.threshold = 0.01;
