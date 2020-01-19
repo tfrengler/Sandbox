@@ -83,13 +83,16 @@
 			canvas = document.getElementById("canvas");
 			drawContext = canvas.getContext("2d");
 			output = document.getElementById("output");
+
 			document.getElementById("Wind").value = System.wind;
 			document.getElementById("Gravity").value = System.gravity;
 			document.getElementById("Air").value = System.airFriction;
+			document.getElementById("Ground").value = System.surfaceFriction;
 
 			document.getElementById("Wind").addEventListener("change", (event)=> System.wind = parseFloat(event.srcElement.value) || 0.0);
 			document.getElementById("Gravity").addEventListener("change", (event)=> System.gravity = parseFloat(event.srcElement.value) || 0.0);
 			document.getElementById("Air").addEventListener("change", (event)=> System.airFriction = parseFloat(event.srcElement.value) || 0.0);
+			document.getElementById("Ground").addEventListener("change", (event)=> System.surfaceFriction = parseFloat(event.srcElement.value) || 0.0);
 
 			window.addEventListener("resize", computeCanvasOffsets);
 
@@ -145,9 +148,9 @@
 
 		const setup = function() {
 			objects = [];
-			objects.push(new Entity(new Vector(canvas.width / 2 - 60, canvas.height / 2), 7, 1.1, new Square(50)));
-			objects.push(new Entity(new Vector(canvas.width / 2, canvas.height / 2), 5, 2, new Rectangle(25, 50)));
-			objects.push(new Entity(new Vector(canvas.width / 2 + 60, canvas.height / 2), 7, 3, new Circle(50, null, "green")));
+			objects.push(new Entity(new Vector(canvas.width / 2 - 60, canvas.height / 2), 7, 5, new Square(50)));
+			objects.push(new Entity(new Vector(canvas.width / 2, canvas.height / 2), 5, 4, new Rectangle(25, 50)));
+			objects.push(new Entity(new Vector(canvas.width / 2 + 60, canvas.height / 2), 3, 2, new Circle(50, null, "green")));
 			direction = new Vector();
 
 			System.render(objects);
@@ -200,6 +203,9 @@
 				</div>
 				<div>
 					<input type="number" step="0.001" id="Air" /><span> AIR FRICTION</span>
+				</div>
+				<div>
+					<input type="number" step="0.001" id="Ground" /><span> GROUND FRICTION</span>
 				</div>
 
 			</div>

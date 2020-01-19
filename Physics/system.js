@@ -17,19 +17,27 @@ class System {
 			if (target)
 				entity.acceleration = this.getAcceleration(entity, target);
 
-			this.applyForce(entity, this.getFriction(entity, System.airFriction));
+			// this.applyForce(entity, this.getFriction(entity, System.airFriction));
 			this.applyForce(entity, new Vector(System.wind, 0)); // Wind, only coming from left or right
 			this.applyForce(entity, new Vector(0, System.gravity * entity.mass)); // Gravity, scaled by mass
+
+			this.checkCollision(entity);
 			if ((entity.collision >> 4) === 1) this.resolveCollision(entity);
 
 			entity.velocity.add(entity.acceleration);
 			entity.velocity.limit(entity.maxSpeed);
+
+			// reset insignificant amounts to 0
+			if (entity.velocity.x < System.threshold && entity.velocity.x > -System.threshold)
+				entity.velocity.x = 0;
+			if (entity.velocity.y < System.threshold && entity.velocity.y > -System.threshold)
+				entity.velocity.y = 0;
+
 			entity.location.add(entity.velocity);
 
 			// entity.angleVelocity += entity.angleAcceleration;
 			// entity.angle += entity.angleVelocity;
 			
-			this.checkCollision(entity);
 			entity.acceleration.mult(0); // Clear acceleration each time, otherwise it accumulates and goes out of whack
 		});
 
@@ -43,8 +51,8 @@ class System {
 		let normal = (System.gravity * entity.mass) * Math.cos(entity.velocity.heading());
 		// Direction perpendicular to the direction of the vector
 
-		friction.normalize();
 		friction.mult(-1);
+		friction.normalize();
 		friction.mult(coefficient * normal);
 
 		return friction;
@@ -63,6 +71,8 @@ class System {
 	}
 
 	static resolveCollision(entity) {
+		this.applyForce(entity, this.getFriction(entity, System.surfaceFriction));
+
 		// LEFT		| 00011000 | 24
 		if ((entity.collision & 24) === 24) {
 			entity.collision = 0;
@@ -185,16 +195,8 @@ class System {
 	}
 }
 
-System.gravity = 0.2;
+System.gravity = 0.25;
 System.airFriction = 0.002;
 System.wind = 0.008;
-
-/*
-
-friction
-wind
-gravity
-drag
-
-velocity
-*/
+System.surfaceFriction = 0.004;
+System.threshold = 0.01;
