@@ -28,3 +28,5 @@ This is simply a repo for me dumping things I am testing and messing with at any
 **TableDragAndDrop (Javascript)**: Another drag and drop prototype, but where the previous one had to do with uploading files, this was for re-arranging HTML-elements, specifically rows in a table
 
 **Physics-folder (Javascript)** My own implementation of Nature of Code (https://natureofcode.com/book/), with the aim of making some small, prototype physics-based game
+
+**CF_SQLite** Super-simple example on how to get SQLite loaded into Lucee with a minimum of fuss. Just requires the SQLite JDBC driver (https://bitbucket.org/xerial/sqlite-jdbc/downloads/)
