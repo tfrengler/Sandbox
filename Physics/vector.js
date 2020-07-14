@@ -51,8 +51,8 @@ class Vector {
 
 	setMag(magnitude) {
 		let ourMag = this.mag();
-		this.x = this.x * magnitude / ourMag;
-		this.y = this.y * magnitude / ourMag;
+		this.x = this.x * (magnitude / ourMag);
+		this.y = this.y * (magnitude / ourMag);
 		return this;
 	}
 
@@ -66,6 +66,11 @@ class Vector {
 
 	headingDegrees() {
 		return this.heading() * (180 / Math.PI);
+	}
+
+	rotate(radians) {
+		this.x = this.x * Math.cos(radians) - this.y * Math.sin(radians);
+		this.y = this.x * Math.sin(radians) - this.y * Math.cos(radians);
 	}
 
 	// STATIC

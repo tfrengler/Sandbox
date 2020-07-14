@@ -2,24 +2,45 @@
 
 class System {
 
-	static getAcceleration(entity, target) {
-		let direction = Vector.sub(target, entity.location); // Calculate a vector that points from the object to the target location
-		direction.normalize(); // Normalize that vector (reducing its length to 1 "unit")
-		direction.mult(0.5 * entity.mass); // Scale that vector to an appropriate value (by multiplying it by some value)
-
-		return direction;
-	}
-
 	static update(entities, target) {
+		let deltaTime = performance.now() - lastUpdate;
+		document.querySelector("#updateTime").textContent = deltaTime.toFixed(2) + " ms";
+		document.querySelector("#fps").textContent = Math.floor(1000 / deltaTime) + " fps";
+
 		entities.forEach(entity => {
 
-			// If we have a target, calculate acceleration, otherwise use the existing acceleration
-			if (target)
-				entity.acceleration = this.getAcceleration(entity, target);
+			let speed = 0.02 * deltaTime;
 
-			this.applyForce(entity, this.getDrag(entity, System.airFriction));
-			this.applyForce(entity, new Vector(System.wind, 0)); // Wind, only coming from left or right
-			this.applyForce(entity, new Vector(0, System.gravity * entity.mass)); // Gravity, scaled by mass
+			if (keysPressed.up) {
+				if (entity.acceleration.x == 0 && entity.acceleration.y == 0) {
+					entity.acceleration.x = 1;
+					entity.acceleration.y = 1;
+				}
+
+				entity.acceleration.mult(speed);
+			}
+			else if (keysPressed.down) {
+				if (entity.acceleration.x == 0 && entity.acceleration.y == 0) {
+					entity.acceleration.x = 1;
+					entity.acceleration.y = 1;
+				}
+				
+				entity.acceleration.mult(-speed);
+			}
+
+			if (keysPressed.left)
+				entity.angle = entity.angle - speed;
+			else if (keysPressed.right)
+				entity.angle = entity.angle + speed;
+
+			if (!keysPressed.up && !keysPressed.down && !keysPressed.left && !keysPressed.right) {
+				let mag = entity.velocity.mag();
+				if (mag > 0) {
+					entity.velocity.mult(0.98);
+				}
+			}
+
+			entity.velocity.rotate(entity.angle);
 
 			this.checkCollision(entity);
 			if ((entity.collision >> 4) === 1) this.resolveCollision(entity);
@@ -34,45 +55,26 @@ class System {
 				entity.velocity.y = 0;
 
 			entity.location.add(entity.velocity);
-
 			// entity.angleVelocity += entity.angleAcceleration;
 			// entity.angle += entity.angleVelocity;
 			
 			entity.acceleration.mult(0); // Clear acceleration each time, otherwise it accumulates and goes out of whack
+
+			if (performance.now() - lastUIUpdate > 500) {
+
+				document.querySelector("#Velocity").textContent = `{X: ${entity.velocity.x.toFixed(2)}, Y: ${entity.velocity.y.toFixed(2)}}`;
+				document.querySelector("#VelocityMag").textContent = entity.velocity.mag().toFixed(2);
+				document.querySelector("#KeysPressed").textContent = `LEFT: ${keysPressed.left}, RIGHT: ${keysPressed.right}, UP: ${keysPressed.up}, DOWN: ${keysPressed.down}`;
+
+				lastUIUpdate = performance.now();
+			}
 		});
 
 		this.render(entities);
-	}
-
-	// Coefficient is the strength of a friction force for a particular surface
-	static getFriction(entity, coefficient) {
-		let friction = entity.velocity.copy();
-		// Gravity * mass = weight
-		let normal = (System.gravity * entity.mass) * Math.cos(entity.velocity.heading());
-		// Direction perpendicular to the direction of the vector
-
-		friction.mult(-1);
-		friction.normalize();
-		friction.mult(coefficient * normal);
-
-		return friction;
-	}
-
-	static getDrag(entity, coefficient) {
-		let speed = entity.velocity.mag();
-		let dragMagnitude = coefficient * speed * speed;
-
-		let drag = entity.velocity.copy();
-		drag.mult(-1);
-		drag.normalize();
-		drag.mult(dragMagnitude);
-
-		return drag;
+		lastUpdate = performance.now();
 	}
 
 	static resolveCollision(entity) {
-		this.applyForce(entity, this.getFriction(entity, System.surfaceFriction));
-
 		// LEFT		| 00011000 | 24
 		if ((entity.collision & 24) === 24) {
 			entity.collision = 0;
@@ -161,14 +163,20 @@ class System {
 
 		entities.forEach(entity => {
 
+			drawContext.save();
+			drawContext.translate(
+				Math.floor(entity.location.x + (entity.shape.width / 2)),
+				Math.floor(entity.location.y + (entity.shape.height / 2))
+			);
+			drawContext.rotate(entity.velocity.heading());
+
 			drawContext.beginPath();
 			drawContext.strokeStyle  = entity.shape.borderColor;
 
 			if (["RECTANGLE","SQUARE"].includes(entity.shape.type)) {
 
 				drawContext.rect(
-					Math.floor(entity.location.x - (entity.shape.width / 2)),
-					Math.floor(entity.location.y - (entity.shape.height / 2)),
+					Math.floor(-entity.shape.width / 2), Math.floor(-entity.shape.height / 2),
 					entity.shape.width,
 					entity.shape.height
 				);
@@ -186,17 +194,8 @@ class System {
 			}
 			
 			drawContext.stroke();
+			drawContext.restore();
 		})
 	}
-
-	static applyForce(entity, force) {
-		let forceAfterMass = Vector.div(force, entity.mass);
-		entity.acceleration.add(forceAfterMass);
-	}
 }
-
-System.gravity = 0.25;
-System.airFriction = 0.002;
-System.wind = 0.01;
-System.surfaceFriction = 0.004;
 System.threshold = 0.01;
