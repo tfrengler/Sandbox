@@ -6,46 +6,36 @@ class System {
 		let deltaTime = performance.now() - lastUpdate;
 		document.querySelector("#updateTime").textContent = deltaTime.toFixed(2) + " ms";
 		document.querySelector("#fps").textContent = Math.floor(1000 / deltaTime) + " fps";
+		deltaTime = deltaTime / 1000;
 
 		entities.forEach(entity => {
 
-			let speed = 0.02 * deltaTime;
-
-			if (keysPressed.up) {
-				if (entity.acceleration.x == 0 && entity.acceleration.y == 0) {
-					entity.acceleration.x = 1;
-					entity.acceleration.y = 1;
-				}
-
-				entity.acceleration.mult(speed);
-			}
-			else if (keysPressed.down) {
-				if (entity.acceleration.x == 0 && entity.acceleration.y == 0) {
-					entity.acceleration.x = 1;
-					entity.acceleration.y = 1;
-				}
-				
-				entity.acceleration.mult(-speed);
-			}
+			let speed = 3 * deltaTime;
+			let brakeSpeed = speed * 0.20;
+			var acceleration = new Vector();
 
 			if (keysPressed.left)
-				entity.angle = entity.angle - speed;
+				entity.angle = entity.angle - 0.02;
 			else if (keysPressed.right)
-				entity.angle = entity.angle + speed;
+				entity.angle = entity.angle + 0.02;
 
-			if (!keysPressed.up && !keysPressed.down && !keysPressed.left && !keysPressed.right) {
-				let mag = entity.velocity.mag();
-				if (mag > 0) {
-					entity.velocity.mult(0.98);
-				}
+			// -cos because our coordinate system is flipped (0,0 is the top-left corner of the screen)
+			if (keysPressed.up) {
+				acceleration.x = Math.sin(entity.angle) * speed;
+				acceleration.y = -Math.cos(entity.angle) * speed;
+			}
+			else if (keysPressed.down) {
+				acceleration.x = Math.sin(entity.angle) * -brakeSpeed;
+				acceleration.y = -Math.cos(entity.angle) * -brakeSpeed;
 			}
 
-			entity.velocity.rotate(entity.angle);
+			// if (!keysPressed.up && !keysPressed.down)
+			// 	acceleration = entity.velocity.copy().mult(-1).mult(0.02);
 
 			this.checkCollision(entity);
 			if ((entity.collision >> 4) === 1) this.resolveCollision(entity);
 
-			entity.velocity.add(entity.acceleration);
+			entity.velocity.add(acceleration);
 			entity.velocity.limit(entity.maxSpeed);
 
 			// reset insignificant amounts to 0
@@ -58,7 +48,7 @@ class System {
 			// entity.angleVelocity += entity.angleAcceleration;
 			// entity.angle += entity.angleVelocity;
 			
-			entity.acceleration.mult(0); // Clear acceleration each time, otherwise it accumulates and goes out of whack
+			//entity.acceleration.mult(0); // Clear acceleration each time, otherwise it accumulates and goes out of whack
 
 			if (performance.now() - lastUIUpdate > 500) {
 
@@ -164,22 +154,33 @@ class System {
 		entities.forEach(entity => {
 
 			drawContext.save();
-			drawContext.translate(
-				Math.floor(entity.location.x + (entity.shape.width / 2)),
-				Math.floor(entity.location.y + (entity.shape.height / 2))
-			);
-			drawContext.rotate(entity.velocity.heading());
+			drawContext.translate(Math.floor(entity.location.x), Math.floor(entity.location.y));
+			drawContext.rotate(entity.angle);
 
-			drawContext.beginPath();
-			drawContext.strokeStyle  = entity.shape.borderColor;
+			
 
 			if (["RECTANGLE","SQUARE"].includes(entity.shape.type)) {
+
+				drawContext.strokeStyle  = entity.shape.borderColor;
+				drawContext.beginPath();
 
 				drawContext.rect(
 					Math.floor(-entity.shape.width / 2), Math.floor(-entity.shape.height / 2),
 					entity.shape.width,
 					entity.shape.height
 				);
+				drawContext.stroke();
+
+				drawContext.beginPath();
+				drawContext.strokeStyle  = "red";
+
+				drawContext.moveTo(0,0);
+				drawContext.lineTo(0, -(entity.shape.height / 2));
+				drawContext.stroke();
+
+				drawContext.beginPath();
+				drawContext.fillStyle = "red";
+				drawContext.fillRect(0, 0, 1, 1);
 			};
 
 			if (entity.shape.type === "CIRCLE") {

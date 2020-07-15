@@ -6,7 +6,6 @@ class Entity {
 
 		this.location = location || new Vector();
 		this.velocity = new Vector();
-		this.acceleration = new Vector();
 		this.shape = shape || {};
 		
 		this.mass = mass || 0.0;
