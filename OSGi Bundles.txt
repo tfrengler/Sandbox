@@ -1,0 +1,75 @@
+<!--- INSTALLING BUNDLES PROGRAMMATICALLY IN LUCEE --->
+
+<cfset root = getDirectoryFromPath(getCurrentTemplatePath()) />
+
+<cfset CFMLEngine = createObject( "java", "lucee.loader.engine.CFMLEngineFactory" ).getInstance() />
+<cfset OSGiUtil = createObject( "java", "lucee.runtime.osgi.OSGiUtil" ) />
+<cfset resource = CFMLEngine.getResourceUtil().toResourceExisting( getPageContext(), "absolute_path_to_jar_file" ) />
+
+<cfset OSGiUtil.installBundle(
+    CFMLEngine.getBundleContext(),
+    resource,
+    true
+) />
+
+<!--- GETTING A LIST OF INSTALLED BUNDLES PROGRAMMATICALLY --->
+
+<cfadmin 
+    type="server"
+    password="xxx" 
+    action="getBundles" 
+    returnvariable="bundles" />
+
+<cfdump var=#bundles# abort="true" />
+
+<!--- CONVERTING EXISTING JAR'S TO BUNDLES --->
+
+1: First off, you need the latest version of "bnd". Download from here:
+https://bndtools.jfrog.io/bndtools/libs-snapshot/biz/aQute/bnd/biz.aQute.bnd/
+
+2: You need to create a .bnd file with the config. What you call the file doesn't matter as long as it ends in .bnd
+
+3: Here's a template for a bnd-file (based on the JCIFS library from codelibs):
+----------------------------------------
+-classpath: <INPUT JAR(S)>
+Bundle-SymbolicName: <NAME>
+ver: <VERSION>
+-output: ${bsn}-${ver}.jar
+Bundle-Version: ${ver}
+Export-Package: *;version=${ver}
+# Uncomment next line to customize imports. The last entry MUST be "*"
+# Import-Package: *
+---------------------------------------
+
+Line 1 indicates the JAR to be processed. If desired, we can merge multiple original JAR files into a single bundle.
+Line 2 indicates the Bundle-SymbolicName (BSN) of the output bundle. This should follow Java package name conventions.
+Line 3 declares an internal value named ver that contains the version of the JDOM API. This value is referenced elsewhere in the descriptor.
+Line 4 specifies the file name of the output bundle. The BSN and version properties are referenced via macros.
+Line 5 specifies the OSGi bundle version, using the version value declared on line 3.
+Line 6 indicates that all packages found in the input JAR (i.e. "*") should be declared as exports of the bundle, and additionally these exports are marked with the version of the API.
+
+The documentation for OSGi wrapping can be found here: https://bnd.bndtools.org/chapters/390-wrapping.html
+
+4: If you want to refine the bundle (particularly with regards to export/import) you can try going to https://search.maven.org/ and find the library there
+Once you find it, find the .pom-file - which is an XML manifest that tells Maven how to build the jar - and look for <artifactId>maven-bundle-plugin</artifactId>
+If there is you're in luck! Get the <configuration>-element below. Here's an example version from JCIFS:
+
+<configuration>
+    <instructions>
+        <Bundle-Version>${osgi.version}</Bundle-Version>
+        <Bundle-License>LGPL</Bundle-License>
+        <Bundle-Vendor>CodeLibs</Bundle-Vendor>
+        <Bundle-SymbolicName>org.codelibs.jcifs</Bundle-SymbolicName>
+        <Export-Package> jcifs.internal*;version="${osgi.pkg.version}";x-internal:=true, jcifs*;version="${osgi.pkg.version}", </Export-Package>
+        <Private-Package/>
+        <Import-Package> javax.servlet*;resolution:=optional, com.sun.security.jgss;resolution:=optional, org.bouncycastle*;version="1.54", !jcifs.internal*, * </Import-Package>
+    </instructions>
+    <addDependenciesToRepository>true</addDependenciesToRepository>
+</configuration>
+
+If you want you can use the <Bundle-SymbolicName> in the bnd-file. What's more important is that we have <Export-Package> and <Import-Package> elements here.
+You can copy these lines verbatim to the bnd-file and then the bundle will be generated with the correct import and export parameters.
+
+5: Here's the cmd for generating the bundle:
+
+    java -jar THE_BIZ_BND_JAR.jar bnd YOUR_BND_FILE.bnd
