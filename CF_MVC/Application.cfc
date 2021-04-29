@@ -1,4 +1,4 @@
-<cfcomponent output="false">
+<cfcomponent output="false" >
 
 	<cfset this.name="CF_MVC" />
 	<cfset this.applicationtimeout = CreateTimeSpan(14,0,0,0) />
@@ -6,54 +6,55 @@
 	<cfset this.sessiontimeout = CreateTimeSpan(0,0,35,0) />
 	<cfset this.loginstorage = "session" />
 	<cfset this.setClientCookies = true />
-	<cfset this.scriptProtect = "all" />
+	<!--- <cfset this.scriptProtect = "all" /> --->
 
 	<!--- MAPPINGS --->
+	<cfset this.root = getDirectoryFromPath(getCurrentTemplatePath()) />
+	<cfset this.mappings["/MVC"] = "#this.root#MVC/" />
+	<cfset this.mappings["/Views"] = "#this.root#views/" />
+	<cfset this.mappings["/Models"] = "#this.root#models/" />
+	<cfset this.mappings["/Controllers"] = "#this.root#controllers/" />
 
-	<cfset this.root = getDirectoryFromPath( getCurrentTemplatePath() ) />
+	<cffunction name="onApplicationStart" returnType="boolean" output="false" >
+		<!--- <cfset application.rootDir = this.root /> --->
 
-	<cffunction name="onApplicationStart" returnType="boolean" output="false">
-		<cfset application.rootDir = this.root />
+		<cfset application.MVC = new MVC.MVC(expandPath("/Controllers"), this.root, nullValue()) />
 
 		<cfreturn true />
 	</cffunction>
 
     <cffunction name="onRequest" returntype="void" output="true" >
-        <cfargument type="string" name="targetPage" required=true />
+        <cfargument type="string" name="targetPage" required="true" />
+
         <cfscript>
+		if (listLast(arguments.targetPage, "/") NEQ "index.cfm")
+		{
+			cfheader(statuscode="404");
+			return;
+		};
+		var Context = new MVC.RequestContext(getHTTPRequestData().headers, FORM, URL);
+		var Response = application.MVC.ResolveRequest(Context);
 
-        <!--- <cfdump var="onRequest: #arguments.targetPage#" /> --->
-        if (!structKeyExists(URL, "action")) return;
+		cfheader(statuscode=Response.GetStatusCode());
+		// cfcontent(reset="true", type=Response.GetContentType());
+        writeOutput(Response.GetBody());
 
-        var Actions = listToArray(URL.action, ".", false);
-        var Controller = Actions[1];
-        var Method = Actions.len() GT 1 ? Actions[2] : "default";
-        structDelete(URL, "action");
-
-        <!--- <cfdump var=#getComponentMetadata("controllers.#controller#").functions# /> --->
-        var RequestContext = {
-            URL: URL,
-            FORM: FORM,
-            Output: "",
-            ContentType: "text/plain"
-        };
-
-        invoke("controllers.#controller#", method, {context: RequestContext});
-        </cfscript>
-
-        <cfheader name="Content-Type" value=#RequestContext.ContentType# />
-        <cfoutput>#RequestContext.Output#</cfoutput>
+		if (structKeyExists(URL, "Debug"))
+		{
+			writeOutput("<hr/>");
+			writeDump(Response);
+		}
+		</cfscript>
     </cffunction>
 
-    <cffunction name="onRequestEnd" returntype="void" output="true" >
+    <cffunction name="onRequestEnd" returntype="void" output="false" >
         <cfargument type="string" name="targetPage" required=true />
 
+		<!--- <cfdump var=#arguments.targetPage# /> --->
     </cffunction>
 
 	<cffunction name="onRequestStart" returnType="boolean" output="true" >
 		<cfargument type="string" name="targetPage" required=true />
-
-        <!--- <cfdump var="onRequestStart: #arguments.targetPage#" /> --->
 
 		<!--- For force refreshing static content programmatically, rather than using Shift + F5 or similar means --->
 		<cfif structKeyExists(URL, "Refresh") >
@@ -67,7 +68,7 @@
 
 			<cfset sessionInvalidate() />
 			<cfset applicationStop() />
-			<cflocation url="http://#CGI.SERVER_NAME#/Debug/index.cfm" addtoken="false" />
+			<cflocation url="http://#CGI.SERVER_NAME#/Sandbox/CF_MVC/index.cfm" addtoken="false" statuscode="301" />
 
 		</cfif>
 

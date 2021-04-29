@@ -1,0 +1,44 @@
+In order to incorporate this in an existing project:
+
+- You need the folder structure:
+-- views/
+-- controllers/
+-- MVC/
+
+- These things from Application.cfc:
+-- The mappings
+-- onApplicationStart()
+-- onRequest()
+
+LAYOUTS/VIEWS:
+
+Need an OnMissingView() and OnMissingLayout() for the controllers
+Need a GetView() on MVC
+
+Need a "Layouts"-folder. These are the primary HTML-pages linked to a "section"
+Layouts are the templates of the page, and each sub-element which is reusable on that page
+(modules if you will) are the "Views", which are injected into
+
+--------------------------
+
+EventManager
+{
+    subscribe()
+    unsubscribe()
+    trigger()
+    dispatch()
+}
+
+Subscriber()
+{
+    callback: function
+    id: numeric
+    context: ???
+}
+
+Event
+{
+    type: ???
+    data: struct
+    timestamp: dateTime
+}
