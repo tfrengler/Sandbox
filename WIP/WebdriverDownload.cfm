@@ -9,7 +9,8 @@
 
 <cfset DriverNames = {
     "FIREFOX": "geckodriver",
-    "CHROME": "chromedriver"
+    "CHROME": "chromedriver",
+    "EDGE": ""
 } />
 
 <cfset BrowserLatestVersionURLs = {
@@ -222,3 +223,7 @@
     // writeDump(GetLatestWebdriverBinary("FIREFOX", "WINDOWS", "x64"));
 
 </cfscript>
+
+<!--- Extract tar.gz natively: https://gist.github.com/ForeverZer0/a2cd292bd2f3b5e114956c00bb6e872b --->
+<!--- MS Edge manifest (XML): https://msedgedriver.azureedge.net/ --->
+<!--- MS Edge latest stable: https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/LATEST_STABLE --->
