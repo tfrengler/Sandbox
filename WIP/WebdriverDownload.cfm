@@ -10,12 +10,13 @@
 <cfset DriverNames = {
     "FIREFOX": "geckodriver",
     "CHROME": "chromedriver",
-    "EDGE": ""
+    "EDGE": "msedgedriver"
 } />
 
 <cfset BrowserLatestVersionURLs = {
     "CHROME": "https://chromedriver.storage.googleapis.com/LATEST_RELEASE",
-    "FIREFOX": "https://github.com/mozilla/geckodriver/releases/latest"
+    "FIREFOX": "https://github.com/mozilla/geckodriver/releases/latest",
+    "EDGE": "https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/LATEST_STABLE"
 } />
 
 <cfset DriverFolder = getDirectoryFromPath(getCurrentTemplatePath()) & "Drivers/" />
@@ -41,6 +42,9 @@
 
         if (!IsValidArchitecture(arguments.architecture))
             throw(message="Error fetching latest webdriver binary", detail="Argument 'architecture' is invalid: #arguments.architecture# | Accepted values are: #arrayToList(ValidArchitectures)#");
+
+        if (arguments.browser == "EDGE" && arguments.platform == "LINUX")
+            throw(message="Error fetching latest webdriver binary", detail="Edge is not available on Linux");
 
         if (arguments.browser == "CHROME" && arguments.platform == "LINUX" && arguments.architecture == "x86")
             throw(message="Error fetching latest webdriver binary", detail="Chrome on Linux only supports x64");
@@ -114,8 +118,11 @@
                 ReturnData = "https://chromedriver.storage.googleapis.com/#arguments.version#/chromedriver_#PlatformPart##ArchitecturePart#.zip";
                 break;
 
+            case "EDGE":
+                ReturnData = "https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/#arguments.version#/edgedriver_#PlatformPart##ArchitecturePart#.zip";
+
             default:
-                throw(message="Error while resolving download URL", detail="Unsupported browser: #arguments.browser#");
+                throw(message="Error resolving webdriver download URL", detail="Unsupported browser: #arguments.browser#");
         }
 
         return ReturnData;
@@ -129,13 +136,12 @@
         if (!IsValidBrowser(arguments.browser))
             throw(message="Unable to determine latest available browser version", detail="Argument 'browser' (#arguments.browser#) is not a valid value (#arrayToList(ValidBrowsers)#)");
 
-        var DoRedirect = (arguments.browser != "FIREFOX");
         var ExpectedStatusCode = (arguments.browser == "FIREFOX" ? 302 : 200)
 
-        var HTTPService = new http(url=#BrowserLatestVersionURLs[arguments.browser]#, method="GET", timeout="10", redirect=#DoRedirect#);
+        var HTTPService = new http(url=#BrowserLatestVersionURLs[arguments.browser]#, method="GET", timeout="10");
         var LatestVersionResponse = HTTPService.send().getPrefix();
 
-        if (LatestVersionResponse.status_code NEQ ExpectedStatusCode)
+        if (LatestVersionResponse.status_code != ExpectedStatusCode)
         {
             var ErrorMessage = [
                 "WebdriverManager.DetermineLatestAvailableVersion: failed to determine latest available webdriver version for #arguments.browser#",
@@ -154,7 +160,6 @@
 
         // For Firefox we get the redirect URL. Based on that we need to extract the version number from the 'location'-header
         return listLast(LatestVersionResponse.responseheader.location, "/");
-
     </cfscript>
 </cffunction>
 
@@ -186,10 +191,13 @@
 
         // Save the downloaded zip file and extract the contents to the driver-folder
         fileWrite(DownloadedPathAndFile, DownloadReponse.filecontent);
-        cfzip(action="unzip", file=#DownloadedPathAndFile#, destination=#DriverFolder#, overwrite="true");
+
+        if (IS_UNIX)
+            cfexecute(name="bash", "tar -xf #DownloadedPathAndFile# -C #DriverFolder#", timeout="5", variable="UntarResult");
+        else
+            cfzip(action="unzip", file=#DownloadedPathAndFile#, destination=#DriverFolder#, overwrite="true");
 
         // (over)Write the version file with the new version and delete the temporary, downloaded zip-file
-        fileDelete(DownloadedPathAndFile);
         fileWrite("#DriverFolder#/#VersionFileName#", arguments.version);
 
         if (IS_UNIX)
@@ -197,6 +205,12 @@
             fileSetAccessMode("#DriverFolder#/#WebdriverFileName#", "744");
             fileSetAccessMode("#DriverFolder#/#VersionFileName#", "744");
         }
+
+        // Clean-up, removing the zip-file...
+        fileDelete(DownloadedPathAndFile);
+        // ...and of course the Edge-zip contains a silly, extra folder and not just the driver binary...
+        if (arguments.browser == "EDGE" && directoryExists("#DriverFolder#/Driver_Notes"))
+            directoryDelete("#DriverFolder#/Driver_Notes");
 
         return true;
     </cfscript>
@@ -215,12 +229,16 @@
     // writeDump(GetLatestWebdriverBinary("CHROME", "WINDOWS", "x64"));
 
     // FIREFOX - LINUX
-    writeDump(GetLatestWebdriverBinary("FIREFOX", "LINUX", "x86"));
+    // writeDump(GetLatestWebdriverBinary("FIREFOX", "LINUX", "x86"));
     // writeDump(GetLatestWebdriverBinary("FIREFOX", "LINUX", "x64"));
 
     // FIREFOX - WINDOWS
     // writeDump(GetLatestWebdriverBinary("FIREFOX", "WINDOWS", "x86"));
     // writeDump(GetLatestWebdriverBinary("FIREFOX", "WINDOWS", "x64"));
+
+    // EDGE - WINDOWS
+    // writeDump(GetLatestWebdriverBinary("EDGE", "WINDOWS", "x86"));
+    // writeDump(GetLatestWebdriverBinary("EDGE", "WINDOWS", "x64"));
 
 </cfscript>
 

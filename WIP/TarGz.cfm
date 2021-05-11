@@ -22,12 +22,12 @@ public void function ExtractTarGz(required any tarAsByteArray, required string o
 }
 
 // https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/90.0.818.56/edgedriver_win64.zip
-// HTTPService = new http(url="https://github.com/mozilla/geckodriver/releases/download/v0.29.1/geckodriver-v0.29.1-linux64.tar.gz", method="GET", timeout="10", redirect="true");
-// DownloadReponse = HTTPService.send().getPrefix();
+HTTPService = new http(url="https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/LATEST_STABLE", method="GET", timeout="10", redirect="true");
+DownloadReponse = HTTPService.send().getPrefix();
 
-// writeDump(DownloadReponse);
+writeDump(DownloadReponse);
 // ExtractTarGz(DownloadReponse.fileContent, "geckodriver.exe");
-cfexecute(name="bash", "tar -xf #rootDir#/#outputFileName# -C #rootDir#", timeout="5", variable="UntarResult");
+// cfexecute(name="bash", "tar -xf #rootDir#/#outputFileName# -C #rootDir#", timeout="5", variable="UntarResult");
 
 </cfscript>
 
