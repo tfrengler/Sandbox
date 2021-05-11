@@ -189,13 +189,20 @@
             return false;
         }
 
-        // Save the downloaded zip file and extract the contents to the driver-folder
-        fileWrite(DownloadedPathAndFile, DownloadReponse.filecontent);
 
-        if (IS_UNIX)
-            cfexecute(name="bash", "tar -xf #DownloadedPathAndFile# -C #DriverFolder#", timeout="5", variable="UntarResult");
+        if (arguments.browser == "FIREFOX" && arguments.platform == "LINUX")
+        {
+            var TarFile = "geckodriver-#arguments.version#-#arguments#.tar";
+            ExtractTarGz(DownloadReponse.fileContent, TarFile);
+            ExtractTar(TarFile);
+        }
         else
+        {
+            // Save the downloaded zip file and extract the contents to the driver-folder
+            fileWrite(DownloadedPathAndFile, DownloadReponse.filecontent);
             cfzip(action="unzip", file=#DownloadedPathAndFile#, destination=#DriverFolder#, overwrite="true");
+        }
+
 
         // (over)Write the version file with the new version and delete the temporary, downloaded zip-file
         fileWrite("#DriverFolder#/#VersionFileName#", arguments.version);
@@ -213,6 +220,96 @@
             directoryDelete("#DriverFolder#/Driver_Notes");
 
         return true;
+    </cfscript>
+</cffunction>
+
+<cffunction access="public" name="ExtractTarGz" returntype="boolean" output="false" >
+    <cfargument name="tarAsByteArray" type="binary" required="true" hint="" />
+    <cfargument name="outputFileName" type="string" required="true" hint="" />
+    <cfscript>
+        try
+        {
+            var InputStream = createObject("java", "java.io.ByteArrayInputStream").init(arguments.tarAsByteArray);
+            var GZIPInputStream = createObject("java", "java.util.zip.GZIPInputStream").init(InputStream);
+            var OutputStream = createObject("java", "java.io.FileOutputStream").init(getTempDirectory() & arguments.outputFileName);
+
+            var EmptyByteArray = createObject("java", "java.io.ByteArrayOutputStream").init().toByteArray();
+            var Buffer = createObject("java","java.lang.reflect.Array").newInstance(EmptyByteArray.getClass().getComponentType(), 1024);
+            var Length = GZIPInputStream.read(Buffer);
+
+            while(Length != -1)
+            {
+                OutputStream.write(Buffer, 0, Length);
+                Length = GZIPInputStream.read(Buffer);
+            }
+
+            return true;
+        }
+        catch(any error)
+        {
+            // writeLog()
+            return false;
+        }
+        finally
+        {
+            OutputStream.close();
+            GZIPInputStream.close();
+        }
+    </cfscript>
+</cffunction>
+
+<!--- NOTE: This is a NOT a complete implementation of tar-extraction. It only extracts the first item and it assumes it's a file. It's purely written for the purpose of extracting webdriver binaries --->
+<cffunction name="ExtractTar" access="public" returntype="boolean" output="false" >
+    <cfargument name="tarFileName" type="string" required="true" />
+    <cfscript>
+        try
+        {
+            // Set up the input file as a stream, and prepare the input buffer
+            var File = createObject("java", "java.io.File").init(getTempDirectory() & arguments.tarFileName);
+            var InputStream = createObject("java", "java.io.FileInputStream").init(File);
+            var EmptyByteArray = createObject("java", "java.io.ByteArrayOutputStream").init().toByteArray();
+            var InputBuffer = createObject("java","java.lang.reflect.Array").newInstance(EmptyByteArray.getClass().getComponentType(), 100);
+
+            // Read in a 100 bytes, parse it as an ASCII string and discard (remove) all null characters from the string
+            // This should give us the file name
+            InputStream.read(InputBuffer, 0, 100);
+            var Name = createObject("java", "java.lang.String").init(InputBuffer, "US-ASCII");
+            Name = REreplace(Name, "[\x0]", "", "ALL");
+
+            // Seek ahead 24 bytes in the stream and read out 12 bytes. Time to find the file size
+            InputStream.skip(24);
+            InputStream.read(InputBuffer, 0, 12);
+
+            // Pull out the 12 bytes of our buffer we just read in, and parse it as a UTF-8 string
+            // Replace all null characters, then parse it as a raw number
+            // Lastly, parse as an unsigned 64-bit character using an octal radix
+            var ByteSubset = createObject("java", "java.util.Arrays").copyOfRange(InputBuffer, 0, 12);
+            var SizeAsString = createObject("java", "java.lang.String").init(ByteSubset, "UTF-8");
+            SizeAsString = REreplace(SizeAsString, "[\x0]", "", "ALL");
+            var FinalSize = createObject("java", "java.lang.Long").parseUnsignedLong(val(SizeAsString), 8);
+
+            InputStream.skip(376);
+
+            // Create our output file and output buffer, then read out the amount of bytes equal to our file size and write that to the output file
+            var OutputPathAndFileName = "#DriverFolder#/#Name#";
+            var OutputStream = createObject("java", "java.io.FileOutputStream").init(OutputPathAndFileName);
+            var OutputBuffer = createObject("java","java.lang.reflect.Array").newInstance(EmptyByteArray.getClass().getComponentType(), FinalSize);
+
+            InputStream.read(OutputBuffer, 0, FinalSize);
+            OutputStream.write(OutputBuffer);
+
+            return true;
+        }
+        catch(any error)
+        {
+            // writeLog()
+            return false;
+        }
+        finally
+        {
+            InputStream.close();
+            OutputStream.close();
+        }
     </cfscript>
 </cffunction>
 
