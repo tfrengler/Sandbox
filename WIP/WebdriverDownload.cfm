@@ -3,7 +3,7 @@
 <cfset IS_MAC = (find("mac", OS) GT 0) />
 <cfset IS_UNIX = (find("nix", OS) GT 0 OR find("nux", OS) GT 0 OR find("aix", OS) GT 0) />
 
-<cfset ValidBrowsers = ["CHROME","FIREFOX"] />
+<cfset ValidBrowsers = ["CHROME","FIREFOX", "EDGE"] />
 <cfset ValidArchitectures = ["x64","x86"] />
 <cfset ValidPlatforms = ["WINDOWS","LINUX"] />
 
@@ -26,8 +26,9 @@
 <cfset IsValidPlatform = function(required string name) { return arrayFind(ValidPlatforms, arguments.name) GT 0; } />
 <!--- Remove all dots and alphabetical characters so we can parse the version as a number, otherwise we can't do a proper number comparison --->
 <cfset ParseVersionNumber = function(required string version) { return val(REreplace(arguments.version, "[a-zA-Z|\.]", "", "ALL")); } />
-<cfset GetVersionFileName = function(required string browser) { return DriverNames[arguments.browser] & "_version.txt"; } />
+<cfset GetVersionFileName = function(required string browser, required string platform) { return "#DriverNames[arguments.browser]#_#arguments.platform#_version.txt"; } />
 
+<!--- PUBLIC --->
 <cffunction access="public" name="GetLatestWebdriverBinary" returntype="boolean" output="false" >
     <cfargument name="browser" type="string" required="true" hint="CHROME,FIREFOX" />
     <cfargument name="platform" type="string" required="true" hint="LINUX,WINDOWS" />
@@ -49,7 +50,7 @@
         if (arguments.browser == "CHROME" && arguments.platform == "LINUX" && arguments.architecture == "x86")
             throw(message="Error fetching latest webdriver binary", detail="Chrome on Linux only supports x64");
 
-        var VersionFile = "#DriverFolder#/#GetVersionFileName(arguments.browser)#";
+        var VersionFile = "#DriverFolder#/#GetVersionFileName(arguments.browser, arguments.platform)#";
         var CurrentVersion = "0";
         var LatestVersion = DetermineLatestAvailableVersion(arguments.browser);
 
@@ -58,15 +59,51 @@
 
         if (ParseVersionNumber(CurrentVersion) >= ParseVersionNumber(LatestVersion))
         {
-            writeLog(text="WebdriverManager.GetLatestWebdriverBinary: the #arguments.browser#-webdriver is already up to date, not downloading (#CurrentVersion#)", type="information", log="application");
+            writeLog(text="WebdriverManager.GetLatestWebdriverBinary: the #arguments.browser#-webdriver is already up to date, not downloading (#CurrentVersion#)", type="Information", log="Application");
             return true;
         }
 
         var LatestWebdriverVersionURL = ResolveDownloadURL(LatestVersion, arguments.browser, arguments.platform, arguments.architecture);
-        return DownloadAndExtract(arguments.browser, LatestVersion, LatestWebdriverVersionURL);
+        return DownloadAndExtract(arguments.browser, arguments.platform, LatestVersion, LatestWebdriverVersionURL);
     </cfscript>
 </cffunction>
 
+<cffunction access="public" name="DetermineLatestAvailableVersion" returntype="string" output="false" >
+    <cfargument name="browser" type="string" required="true" hint="CHROME,FIREFOX" />
+    <cfscript>
+
+        if (!IsValidBrowser(arguments.browser))
+            throw(message="Unable to determine latest available browser version", detail="Argument 'browser' (#arguments.browser#) is not a valid value (#arrayToList(ValidBrowsers)#)");
+
+        var ExpectedStatusCode = (arguments.browser == "FIREFOX" ? 302 : 200);
+        var AllowRedirect = arguments.browser != "FIREFOX";
+
+        var HTTPService = new http(url=#BrowserLatestVersionURLs[arguments.browser]#, method="GET", timeout="10", redirect=#AllowRedirect#);
+        var LatestVersionResponse = HTTPService.send().getPrefix();
+
+        if (LatestVersionResponse.status_code != ExpectedStatusCode)
+        {
+            var ErrorMessage = [
+                "WebdriverManager.DetermineLatestAvailableVersion: failed to determine latest available webdriver version for #arguments.browser#",
+                "URL '#BrowserLatestVersionURLs[arguments.browser]#' returned:",
+                "- Status code: #LatestVersionResponse.status_code#",
+                "- Status text: #LatestVersionResponse.status_text#",
+                "- Error detail: #LatestVersionResponse.errordetail#"
+            ];
+
+            writeLog(text=arrayToList(ErrorMessage, "#chr(13)&chr(10)#"), type="error", log="Application");
+            return "0";
+        }
+
+        if (arguments.browser != "FIREFOX")
+            return trim(LatestVersionResponse.fileContent);
+
+        // For Firefox we get the redirect URL. Based on that we need to extract the version number from the 'location'-header
+        return listLast(LatestVersionResponse.responseheader.location, "/");
+    </cfscript>
+</cffunction>
+
+<!--- PRIVATE --->
 <cffunction access="public" name="ResolveDownloadURL" returntype="string" output="false" >
     <cfargument name="version" type="string" required="true" hint="" />
     <cfargument name="browser" type="string" required="true" hint="CHROME,FIREFOX" />
@@ -120,6 +157,7 @@
 
             case "EDGE":
                 ReturnData = "https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/#arguments.version#/edgedriver_#PlatformPart##ArchitecturePart#.zip";
+                break;
 
             default:
                 throw(message="Error resolving webdriver download URL", detail="Unsupported browser: #arguments.browser#");
@@ -129,49 +167,17 @@
     </cfscript>
 </cffunction>
 
-<cffunction access="public" name="DetermineLatestAvailableVersion" returntype="string" output="false" >
-    <cfargument name="browser" type="string" required="true" hint="CHROME,FIREFOX" />
-    <cfscript>
-
-        if (!IsValidBrowser(arguments.browser))
-            throw(message="Unable to determine latest available browser version", detail="Argument 'browser' (#arguments.browser#) is not a valid value (#arrayToList(ValidBrowsers)#)");
-
-        var ExpectedStatusCode = (arguments.browser == "FIREFOX" ? 302 : 200)
-
-        var HTTPService = new http(url=#BrowserLatestVersionURLs[arguments.browser]#, method="GET", timeout="10");
-        var LatestVersionResponse = HTTPService.send().getPrefix();
-
-        if (LatestVersionResponse.status_code != ExpectedStatusCode)
-        {
-            var ErrorMessage = [
-                "WebdriverManager.DetermineLatestAvailableVersion: failed to determine latest available webdriver version for #arguments.browser#",
-                "URL '#BrowserLatestVersionURLs[arguments.browser]#' returned:",
-                "- Status code: #LatestVersionResponse.status_code#",
-                "- Status text: #LatestVersionResponse.status_text#",
-                "- Error detail: #LatestVersionResponse.errordetail#"
-            ];
-
-            writeLog(text=arrayToList(ErrorMessage, chr(13)&chr(10)), type="error", log="Application");
-            return "0";
-        }
-
-        if (arguments.browser != "FIREFOX")
-            return LatestVersionResponse.fileContent;
-
-        // For Firefox we get the redirect URL. Based on that we need to extract the version number from the 'location'-header
-        return listLast(LatestVersionResponse.responseheader.location, "/");
-    </cfscript>
-</cffunction>
-
-<cffunction access="public" name="DownloadAndExtract" returntype="boolean" output="true" >
+<cffunction access="public" name="DownloadAndExtract" returntype="boolean" output="false" >
     <cfargument name="browser" type="string" required="true" hint="" />
+    <cfargument name="platform" type="string" required="true" hint="" />
     <cfargument name="version" type="string" required="true" hint="" />
     <cfargument name="url" type="string" required="true" hint="" />
     <cfscript>
 
         var DownloadedFileName = listLast(arguments.url, "/");
         var DownloadedPathAndFile = getTempDirectory() & DownloadedFileName;
-        var VersionFileName = GetVersionFileName(arguments.browser);
+        var VersionFileName = GetVersionFileName(arguments.browser, arguments.platform);
+        var WebdriverFileName = DriverNames[arguments.browser];
         var HTTPService = new http(url=#arguments.url#, method="GET", timeout="10", redirect="true");
         var DownloadReponse = HTTPService.send().getPrefix();
 
@@ -185,16 +191,19 @@
                 "- Error detail: #DownloadReponse.errordetail#"
             ];
 
-            writeLog(text=arrayToList(ErrorMessage, chr(13)&chr(10)), type="error", log="Application");
+            writeLog(text=arrayToList(ErrorMessage, "#chr(13)&chr(10)#"), type="Error", log="Application");
             return false;
         }
 
-
         if (arguments.browser == "FIREFOX" && arguments.platform == "LINUX")
         {
-            var TarFile = "geckodriver-#arguments.version#-#arguments#.tar";
-            ExtractTarGz(DownloadReponse.fileContent, TarFile);
-            ExtractTar(TarFile);
+            var ExtractedTarFileName = DownloadedFileName.replace(".gz", "");
+            if (!ExtractTarGz(DownloadReponse.fileContent, ExtractedTarFileName)) return false;
+            if (!ExtractTar(ExtractedTarFileName)) return false;
+
+            // Re-assigning the variable since we don't download the original file to disk
+            // This is now the extracted tar-file, and not the tar.gz one
+            DownloadedPathAndFile = getTempDirectory() & ExtractedTarFileName;
         }
         else
         {
@@ -202,7 +211,6 @@
             fileWrite(DownloadedPathAndFile, DownloadReponse.filecontent);
             cfzip(action="unzip", file=#DownloadedPathAndFile#, destination=#DriverFolder#, overwrite="true");
         }
-
 
         // (over)Write the version file with the new version and delete the temporary, downloaded zip-file
         fileWrite("#DriverFolder#/#VersionFileName#", arguments.version);
@@ -217,7 +225,7 @@
         fileDelete(DownloadedPathAndFile);
         // ...and of course the Edge-zip contains a silly, extra folder and not just the driver binary...
         if (arguments.browser == "EDGE" && directoryExists("#DriverFolder#/Driver_Notes"))
-            directoryDelete("#DriverFolder#/Driver_Notes");
+            directoryDelete("#DriverFolder#/Driver_Notes", true);
 
         return true;
     </cfscript>
@@ -247,18 +255,25 @@
         }
         catch(any error)
         {
-            // writeLog()
+            var ErrorMessage = [
+                "WebdriverManager.ExtractTarGz: failed to extract tar-file from byte array to output file (#getTempDirectory() & arguments.outputFileName#):",
+                "- Message: #error.message#",
+                "- Stacktrace: #error.stacktrace#"
+            ];
+
+            writeLog(text=arrayToList(ErrorMessage, "#chr(13)&chr(10)#"), type="Error", log="Application");
             return false;
         }
         finally
         {
-            OutputStream.close();
-            GZIPInputStream.close();
+            if (isDefined("OutputStream")) OutputStream.close();
+            if (isDefined("GZIPInputStream")) GZIPInputStream.close();
         }
     </cfscript>
 </cffunction>
 
-<!--- NOTE: This is a NOT a complete implementation of tar-extraction. It only extracts the first item and it assumes it's a file. It's purely written for the purpose of extracting webdriver binaries --->
+<!--- NOTE: This is a NOT a complete implementation of tar-extraction. It only extracts the first item and it assumes it's a file --->
+<!--- It's purely written for the purpose of extracting webdriver binaries on Linux!--->
 <cffunction name="ExtractTar" access="public" returntype="boolean" output="false" >
     <cfargument name="tarFileName" type="string" required="true" />
     <cfscript>
@@ -302,28 +317,31 @@
         }
         catch(any error)
         {
-            // writeLog()
+            var ErrorMessage = [
+                "WebdriverManager.ExtractTar: failed to extract tar-file from tar.gz-file (#getTempDirectory() & arguments.tarFileName#):",
+                "- Message: #error.message#",
+                "- Stacktrace: #error.stacktrace#"
+            ];
+
+            writeLog(text=arrayToList(ErrorMessage, "#chr(13)&chr(10)#"), type="Error", log="Application");
             return false;
         }
         finally
         {
-            InputStream.close();
-            OutputStream.close();
+            if (isDefined("InputStream")) InputStream.close();
+            if (isDefined("OutputStream")) OutputStream.close();
         }
     </cfscript>
 </cffunction>
 
 <cfscript>
-    // writeDump(arrayFind(["x86"], "x86"));
-    // writeDump(IsValidArchitecture("x86"));
-
     // CHROME - LINUX
-    // writeDump(GetLatestWebdriverBinary("CHROME", "LINUX", "x86"));
-    // writeDump(GetLatestWebdriverBinary("CHROME", "LINUX", "x64"));
+    // writeDump(var=GetLatestWebdriverBinary("CHROME", "LINUX", "x86"), label="CHROME LINUX x86"); // Expecting an error
+    // writeDump(var=GetLatestWebdriverBinary("CHROME", "LINUX", "x64"), label="CHROME LINUX x64");
 
     // CHROME - WINDOWS
-    // writeDump(GetLatestWebdriverBinary("CHROME", "WINDOWS", "x86"));
-    // writeDump(GetLatestWebdriverBinary("CHROME", "WINDOWS", "x64"));
+    // writeDump(var=GetLatestWebdriverBinary("CHROME", "WINDOWS", "x86"), label="CHROME WINDOWS x86");
+    // writeDump(var=GetLatestWebdriverBinary("CHROME", "WINDOWS", "x64"), label="CHROME WINDOWS x64");
 
     // FIREFOX - LINUX
     // writeDump(GetLatestWebdriverBinary("FIREFOX", "LINUX", "x86"));
@@ -336,7 +354,6 @@
     // EDGE - WINDOWS
     // writeDump(GetLatestWebdriverBinary("EDGE", "WINDOWS", "x86"));
     // writeDump(GetLatestWebdriverBinary("EDGE", "WINDOWS", "x64"));
-
 </cfscript>
 
 <!--- Extract tar.gz natively: https://gist.github.com/ForeverZer0/a2cd292bd2f3b5e114956c00bb6e872b --->
