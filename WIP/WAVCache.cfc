@@ -20,7 +20,7 @@
     --->
 
     <cfset variables.REMOVAL_POLICIES = {
-        "LIFO": 0, // Last in, first out (based on the lastDateModified value)
+        "FIFO": 0, // First in, first out (based on the lastDateModified value)
         "SMALLEST": 1,
         "BIGGEST": 2
     } />
@@ -37,7 +37,7 @@
         <cfargument name="cacheFolder" type="string" required="true" default="" hint="The folder in which the WAV files will be stored" />
         <cfargument name="fileManifest" type="array" required="true" default="" hint="An array of absolute filepaths to the music files the cache will be accessing. These will be hashed and this hash becomes the ID for this file" />
         <cfargument name="maxSize" type="numeric" required="false" default="0" hint="The max size that will be used by the cache. Optional, defaults to 200MB. NOTE: If you pass a size below 200MB it will be set to 200MB" />
-        <cfargument name="removePolicy" type="string" required="false" default="LIFO" hint="The policy used for removing files when the cache limit is hit. Valid values are LIFO, SMALLEST, BIGGEST. Optional, defaults to LIFO" />
+        <cfargument name="removePolicy" type="string" required="false" default="FIFO" hint="The policy used for removing files when the cache limit is hit. Valid values are LIFO, SMALLEST, BIGGEST. Optional, defaults to LIFO" />
         <cfargument name="purge" type="boolean" required="false" default="false" hint="Whether the purge any existing WAV-files from the cache folder first. Optional, defaults to false" />
         <cfargument name="hashAlgorithm" type="string" required="false" default="SHA" hint="Which algorithm to use for hashing the files in 'fileManifest' for storage in the internal cache manifest" />
         <cfargument name="logger" type="ILogger" required="true" hint="" />
@@ -60,7 +60,7 @@
         variables.Logger = arguments.logger;
 
         var MinimumSize = 200 * 1024 * 1024;
-        variables.MaxSize = arguments.maxSize < MinimumSize ? arguments.maxSize : MinimumSize;
+        variables.MaxSize = arguments.maxSize < MinimumSize ? MinimumSize : arguments.maxSize;
 
         variables.Logger.Information("Max cache size set to: " & variables.MaxSize & " bytes", getFunctionCalledName());
         variables.Logger.Information("Hash algorithm set to: " & variables.HashAlgorithm, getFunctionCalledName());
@@ -149,11 +149,9 @@
                 continue;
             }
 
-            variables.CacheManifest[FileID] = {
-                "Size": CurrentFileRow.Size,
-                "DateTimeCreated": CurrentFileRow.DateLastModified,
-                "InCache": true
-            };
+            variables.CacheManifest[FileID].Size = CurrentFileRow.Size;
+            variables.CacheManifest[FileID].DateTimeCreated = CurrentFileRow.DateLastModified;
+            variables.CacheManifest[FileID].InCache = true;
 
             variables.CacheSize = variables.CacheSize + CurrentFileRow.Size;
         }
@@ -164,9 +162,8 @@
         <cfscript>
         variables.CacheBeingTrimmed = true;
         variables.Logger.Information("Trimming the cache", getFunctionCalledName());
-        // LIFO
-        var SortBy = "DateLastModified DESC";
 
+        var SortBy = "DateLastModified ASC"; // LIFO
         if (variables.RemovePolicy == 1)
             SortBy = "Size ASC";
         else if (variables.RemovePolicy == 2)
@@ -181,7 +178,7 @@
             sort=#SortBy#
         ).getRow(1);
 
-        variables.Logger.Information("Removing file: #EntryToRemove.Name#, #EntryToRemove.Size# bytes", getFunctionCalledName());
+        variables.Logger.Information("Removing file from cache: #EntryToRemove.Name#, #EntryToRemove.Size# bytes", getFunctionCalledName());
 
         fileDelete("#variables.CacheFolder#/#EntryToRemove.Name#");
         variables.CacheSize = variables.CacheSize - EntryToRemove.Size;
@@ -234,20 +231,18 @@
             return false;
         }
 
-        variables.CacheManifest[arguments.ID] = {
-            "Size": FileInfo.size,
-            "DateTimeCreated": createODBCDateTime(now()),
-            "InCache": true
-        };
-
         var Entry = variables.CacheManifest[arguments.ID];
+        Entry.Size = FileInfo.size;
+        Entry.DateTimeCreated = createODBCDateTime(now());
+        Entry.InCache = true;
+
         variables.CacheSize = variables.CacheSize + FileInfo.size;
 
         variables.Logger.Information("Decoded and added new entry: ID: #arguments.ID# | Size: #Entry.Size# | DateTimeCreated: #Entry.DateTimeCreated# | InCache: #Entry.InCache#", getFunctionCalledName());
         variables.Logger.Information("Cache size is now: #variables.CacheSize# bytes", getFunctionCalledName());
 
         if (!variables.CacheBeingTrimmed && variables.CacheSize > variables.MaxSize)
-            runAsync(TrimCache);
+            TrimCache();
 
         return true;
         </cfscript>

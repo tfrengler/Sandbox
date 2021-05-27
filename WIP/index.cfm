@@ -25,10 +25,17 @@ writeOutput("<hr/>")
 root = getDirectoryFromPath(getCurrentTemplatePath());
 
 Logger = new Logger();
-WAVCache = new WAVCache(cacheFolder="C:\Temp\WavCache", fileManifest=CacheFolderContents, maxSize=2 * 1024 * 1024 * 1024, logger=Logger);
-File = WAVCache.Get("20BCB15CE78F51685DB60EC7DCDFD07C57458973");
+// maxSize=2 * 1024 * 1024 * 1024
+WAVCache = new WAVCache(cacheFolder="C:\Temp\WavCache", fileManifest=CacheFolderContents, logger=Logger);
 
-writeDump(File);
+File1 = WAVCache.Get("2B9DC44A6AEB7BF2A377C910CADA5C2B1558128B");
+File2 = WAVCache.Get("78F270D2C2D4ADFAE20A179F0734614A2A817083");
+File3 = WAVCache.Get("447799354F83DBE8908A3E20E2064E6CB7F7043F");
+File4 = WAVCache.Get("038CBE3904D6081C713A2E3053A8CD53AF8F79ED");
+File5 = WAVCache.Get("20BCB15CE78F51685DB60EC7DCDFD07C57458973");
+
+sleep(2000);
+// writeDump(File);
 </cfscript>
 <!--- <cfoutput>
     <section>
