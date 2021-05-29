@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrenglerAMP</title>
+
+    <link rel="stylesheet" href="normalize.css" />
+    <link rel="stylesheet" href="Lib/fontawesome-free-5.15.3-web/css/all.min.css" />
+
+    <style>
+        /* COLORS */
+        :root {
+            --themeColor1: rgb(100, 149, 237);
+            --themeColor2: #D3B5A9;
+            --themeColor3: #D5DAF0;
+            --themeColor4: #BEBEBE;
+            --themeColor5: #8196E6;
+        }
+
+        /* FONTS */
+
+        @font-face {
+            font-family: Orbitron;
+            src: url(Fonts/Orbitron-Regular.ttf);
+        }
+
+        @font-face {
+            font-family: Roboto;
+            src: url(Fonts/Roboto-Regular.ttf);
+        }
+
+        body,html
+        {
+            height: 100%;
+            overflow: hidden;
+            font-family: Roboto;
+        }
+
+        body
+        {
+            padding-left: 0.3rem;
+            padding-right: 0.3rem;
+        }
+
+        .flex-row-wrap
+        {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .flex-row-nowrap
+        {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+        }
+
+        .flex-column-nowrap
+        {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap !important;
+        }
+
+        .flex-items-h-center
+        {
+            justify-content: center;
+        }
+
+        .flex-items-v-center
+        {
+            align-items: center;
+        }
+
+        .flex-item-shrink
+        {
+            flex-shrink: 1;
+            flex-grow: 0;
+        }
+
+        .flex-item-grow
+        {
+            flex-shrink: 0;
+            flex-grow: 1;
+        }
+
+        .flex-item-both
+        {
+            flex-shrink: 1;
+            flex-grow: 1;
+        }
+
+        .no-min-width
+        {
+            min-width: 0;
+        }
+
+        .gap-column-1
+        {
+            column-gap: 1rem;
+        }
+
+        .gap-column-05
+        {
+            column-gap: 0.5rem;
+        }
+
+        .gap-row-1
+        {
+            row-gap: 1rem;
+        }
+
+        .gap-row-05
+        {
+            row-gap: 0.5rem;
+        }
+
+        .margin-t-05
+        {
+            margin-top: 0.5rem;
+        }
+
+        .font-size-15
+        {
+            font-size: 1.5rem;
+        }
+
+        .standard-box
+        {
+            border-style: solid;
+            border-width: 0.1rem;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .text-overflow-ellipsis
+        {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .h-align-content
+        {
+            text-align: center;
+        }
+
+        .controls-theme > *:first-child
+        {
+            border-radius: 0.3rem 0 0 0.3rem;
+        }
+
+        .controls-theme > *:last-child
+        {
+            border-radius: 0 0.3rem 0.3rem 0;
+        }
+
+        #PlaybackControls1 > *
+        {
+            padding: 0.5rem;
+        }
+
+        #Player
+        {
+            background-color: var(--themeColor1);
+            box-shadow: 5px 5px 5px darkgray;
+        }
+
+        #NowPlayingTrack
+        {
+            color: white;
+            border-radius: 0.5rem;
+            padding: 0.3rem;
+            background-color: var(--themeColor5);
+            box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+        .controls-theme > *:nth-child(odd)
+        {
+            background-color: var(--themeColor3);
+        }
+
+        .controls-theme > *:nth-child(even)
+        {
+            background-color: var(--themeColor2);
+        }
+
+        #PlaybackProgress
+        {
+            border-radius: 0.5rem;
+            padding: 0.3rem;
+            background-color: var(--themeColor5);
+            box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+        #PlaybackProgress div
+        {
+            background-color: var(--themeColor4);
+            width: 60%;
+            height: 0.5rem;
+            border-radius: inherit;
+        }
+
+        #PlaylistContainer
+        {
+            max-width: 512px;
+            width: 100%;
+        }
+
+        #Playlist
+        {
+            background-color: black;
+            box-shadow: 5px 5px 5px darkgray;
+        }
+
+        hr
+        {
+            color: var(--themeColor4);
+        }
+
+        [data-name="PlaylistEntry"]
+        {
+            color: white;
+        }
+
+        [data-name="TrackTitle"]
+        {
+            color: var(--themeColor2) !important;
+        }
+
+        [data-name="PlayTrack"]
+        {
+            border-style: solid;
+            border-width: 0.1rem;
+            border-radius: 0.3rem;
+            border-color: var(--themeColor2);
+            color: var(--themeColor4);
+            padding: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <section id="Main" class="flex-row-wrap flex-items-h-center gap-column-1 gap-row-1" >
+
+        <section id="PlayerContainer" class="flex-item-shrink no-min-width">
+
+            <div id="Player" class="flex-column-nowrap gap-row-05 standard-box">
+
+                <div id="NowPlayingTrack" class="flex-item-shrink" >
+                    <div class="text-overflow-ellipsis" >The Who - Won't Get Fooled Again (Full Length Version)</div>
+                </div>
+
+                <div class="flex-item-shrink" >
+                    <div id="PlaybackControls1" class="flex-row-nowrap flex-items-h-center gap-row-05 controls-theme">
+                        <i class="flex-item-shrink fa-2x fas fa-step-backward"></i>
+                        <i class="flex-item-shrink fa-2x fas fa-play"></i> <!-- "fa-pause" for pause state -->
+                        <i class="flex-item-shrink fa-2x fas fa-step-forward"></i>
+                        <i class="flex-item-shrink fa-2x fas fa-random"></i>
+                        <i class="flex-item-shrink fa-2x fas fa-sync"></i>
+                    </div>
+                </div>
+
+                <div id="PlaybackProgress" class="flex-item-shrink" >
+                    <div></div>
+                </div>
+
+                <div class="flex-item-shrink" >
+
+                    <div id="PlaybackControls2" class="flex-row-nowrap controls-theme" >
+
+                        <div id="CurrentDuration" class="flex-item-grow h-align-content font-size-15" >00:00</div>
+
+                        <div class="flex-item-grow h-align-content">
+                            <input type="range" id="Volume" max="100" min="0" value="80" step="5" title="80%" ></input>
+                        </div>
+
+                        <!-- "fa-volume-mute" for muted state -->
+                        <i id="Mute" class="flex-item-grow h-align-content font-size-15 fas fa-volume-up"></i>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <section id="PlaylistContainer" class="flex-item-shrink">
+
+            <div id="Playlist" class="standard-box" >
+                <hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Red Hot Chili Peppers</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >Strip My Mind</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div>
+
+                <hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Manowar</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >Achilles, Agony And Ecstasy In Eight Parts: Prelude/I. Hector Storms The Wall/II. The Death Of Patroclus/III. Funeral March/IV. Armor Of The Gods/V. Hector's Final Hour/VI. Death Hector's Reward/VII. The Desecration Of Hector's Body, Part 1, Part 2</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >13:42</span>
+                </div>
+
+                <hr/>
+
+                <!-- <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
+                    The Rolling Stones - (I Can't Get No) Satisfaction
+                </div>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
+                    Manowar - Achilles, Agony And Ecstasy In Eight Parts: Prelude/I. Hector Storms The Wall/II. The Death Of Patroclus/III. Funeral March/IV. Armor Of The Gods/V. Hector's Final Hour/VI. Death Hector's Reward/VII. The Desecration Of Hector's Body, Part 1, Part 2
+                </div>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
+                    Led Zeppelin - Heartbreaker
+                </div>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
+                    Creedence Clearwater Revival - I Heard It Through the Grapevine
+                </div> -->
+            </div>
+
+        </section>
+    </section>
+</body>
+</html>
