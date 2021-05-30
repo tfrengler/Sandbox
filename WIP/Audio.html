@@ -42,6 +42,7 @@
         {
             padding-left: 0.3rem;
             padding-right: 0.3rem;
+            padding-top: 2rem;
         }
 
         .flex-row-wrap
@@ -208,6 +209,14 @@
         {
             max-width: 512px;
             width: 100%;
+            overflow: scroll;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        #PlaylistContainer::-webkit-scrollbar
+        {
+            display: none;
         }
 
         #Playlist
@@ -240,9 +249,42 @@
             color: var(--themeColor4);
             padding: 0.3rem;
         }
+
+        .button-hover1:hover
+        {
+            cursor: pointer;
+            color: white;
+            background-color: black;
+        }
+
+        .button-hover2:hover
+        {
+            cursor: pointer;
+            color: black;
+            background-color: white;
+        }
+
+        .selected1
+        {
+            color: white;
+            background-color: cornflowerblue;
+        }
+
+        #Notifications
+        {
+            position: fixed;
+            top: 0.2rem;
+            left: 50%;
+            transform: translateX(-50%);
+        }
     </style>
 </head>
 <body>
+
+    <section id="Notifications" >
+        <i class="fa-pulse fas fa-spinner"></i>
+        <span>Stalled...</span>
+    </section>
 
     <section id="Main" class="flex-row-wrap flex-items-h-center gap-column-1 gap-row-1" >
 
@@ -256,11 +298,11 @@
 
                 <div class="flex-item-shrink" >
                     <div id="PlaybackControls1" class="flex-row-nowrap flex-items-h-center gap-row-05 controls-theme">
-                        <i class="flex-item-shrink fa-2x fas fa-step-backward"></i>
-                        <i class="flex-item-shrink fa-2x fas fa-play"></i> <!-- "fa-pause" for pause state -->
-                        <i class="flex-item-shrink fa-2x fas fa-step-forward"></i>
-                        <i class="flex-item-shrink fa-2x fas fa-random"></i>
-                        <i class="flex-item-shrink fa-2x fas fa-sync"></i>
+                        <i id="PreviousTrack" title="Previous track" class="flex-item-shrink button-hover1 fa-2x fas fa-step-backward"></i>
+                        <i id="PlayTrack" title="Play" class="flex-item-shrink button-hover1 fa-2x fas fa-play"></i> <!-- "fa-pause" for pause state -->
+                        <i id="NextTrack" title="Next track" class="flex-item-shrink button-hover1 fa-2x fas fa-step-forward"></i>
+                        <i id="ShufflePlay" title="Shuffle" class="flex-item-shrink button-hover1 fa-2x fas fa-random"></i>
+                        <i id="ReloadTrack" title="Re-load" class="flex-item-shrink button-hover1 fa-2x fas fa-sync"></i>
                     </div>
                 </div>
 
@@ -272,14 +314,14 @@
 
                     <div id="PlaybackControls2" class="flex-row-nowrap controls-theme" >
 
-                        <div id="CurrentDuration" class="flex-item-grow h-align-content font-size-15" >00:00</div>
+                        <div id="CurrentDuration" class="flex-item-grow h-align-content font-size-15" >00:36</div>
 
                         <div class="flex-item-grow h-align-content">
                             <input type="range" id="Volume" max="100" min="0" value="80" step="5" title="80%" ></input>
                         </div>
 
                         <!-- "fa-volume-mute" for muted state -->
-                        <i id="Mute" class="flex-item-grow h-align-content font-size-15 fas fa-volume-up"></i>
+                        <i id="Mute" title="Mute" class="flex-item-grow button-hover1 h-align-content font-size-15 fas fa-volume-up"></i>
                     </div>
 
                 </div>
@@ -287,14 +329,14 @@
 
         </section>
 
-        <section id="PlaylistContainer" class="flex-item-shrink">
+        <section id="PlaylistContainer" class="flex-item-shrink" style="max-height: 300px; overflow: scroll; " >
 
             <div id="Playlist" class="standard-box" >
                 <hr/>
 
                 <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
                     <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
-                    <i data-name="PlayTrack" class="flex-item-shrink fa-2x fas fa-play"></i>
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
 
                     <div class="flex-item-both no-min-width" >
                         <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Red Hot Chili Peppers</b></div>
@@ -308,7 +350,7 @@
 
                 <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
                     <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
-                    <i data-name="PlayTrack" class="flex-item-shrink fa-2x fas fa-play"></i>
+                    <i data-name="PlayTrack" class="flex-item-shrink selected1 fa-2x fas fa-hourglass-half"></i>
 
                     <div class="flex-item-both no-min-width" >
                         <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Manowar</b></div>
@@ -320,21 +362,47 @@
 
                 <hr/>
 
-                <!-- <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
-                    The Rolling Stones - (I Can't Get No) Satisfaction
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>The Rolling Stones</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >(I Can't Get No) Satisfaction</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >3:21</span>
                 </div>
 
-                <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
-                    Manowar - Achilles, Agony And Ecstasy In Eight Parts: Prelude/I. Hector Storms The Wall/II. The Death Of Patroclus/III. Funeral March/IV. Armor Of The Gods/V. Hector's Final Hour/VI. Death Hector's Reward/VII. The Desecration Of Hector's Body, Part 1, Part 2
+                <hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Led Zeppelin</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >Heartbreaker</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
                 </div>
 
-                <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
-                    Led Zeppelin - Heartbreaker
+                <hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
                 </div>
 
-                <div data-name="PlaylistEntry" data-trackid="XXX" class="text-overflow-ellipsis" >
-                    Creedence Clearwater Revival - I Heard It Through the Grapevine
-                </div> -->
+                <hr/>
             </div>
 
         </section>
