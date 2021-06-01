@@ -8,280 +8,20 @@
 
     <link rel="stylesheet" href="normalize.css" />
     <link rel="stylesheet" href="Lib/fontawesome-free-5.15.3-web/css/all.min.css" />
+    <link rel="stylesheet" href="CSS/main.css" />
 
-    <style>
-        /* COLORS */
-        :root {
-            --themeColor1: rgb(100, 149, 237);
-            --themeColor2: #D3B5A9;
-            --themeColor3: #D5DAF0;
-            --themeColor4: #BEBEBE;
-            --themeColor5: #8196E6;
-        }
-
-        /* FONTS */
-
-        @font-face {
-            font-family: Orbitron;
-            src: url(Fonts/Orbitron-Regular.ttf);
-        }
-
-        @font-face {
-            font-family: Roboto;
-            src: url(Fonts/Roboto-Regular.ttf);
-        }
-
-        body,html
-        {
-            height: 100%;
-            overflow: hidden;
-            font-family: Roboto;
-        }
-
-        body
-        {
-            padding-left: 0.3rem;
-            padding-right: 0.3rem;
-            padding-top: 2rem;
-        }
-
-        .flex-row-wrap
-        {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-
-        .flex-row-nowrap
-        {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-        }
-
-        .flex-column-nowrap
-        {
-            display: flex;
-            flex-direction: column;
-            flex-wrap: nowrap !important;
-        }
-
-        .flex-items-h-center
-        {
-            justify-content: center;
-        }
-
-        .flex-items-v-center
-        {
-            align-items: center;
-        }
-
-        .flex-item-shrink
-        {
-            flex-shrink: 1;
-            flex-grow: 0;
-        }
-
-        .flex-item-grow
-        {
-            flex-shrink: 0;
-            flex-grow: 1;
-        }
-
-        .flex-item-both
-        {
-            flex-shrink: 1;
-            flex-grow: 1;
-        }
-
-        .no-min-width
-        {
-            min-width: 0;
-        }
-
-        .gap-column-1
-        {
-            column-gap: 1rem;
-        }
-
-        .gap-column-05
-        {
-            column-gap: 0.5rem;
-        }
-
-        .gap-row-1
-        {
-            row-gap: 1rem;
-        }
-
-        .gap-row-05
-        {
-            row-gap: 0.5rem;
-        }
-
-        .margin-t-05
-        {
-            margin-top: 0.5rem;
-        }
-
-        .font-size-15
-        {
-            font-size: 1.5rem;
-        }
-
-        .standard-box
-        {
-            border-style: solid;
-            border-width: 0.1rem;
-            border-radius: 0.5rem;
-            padding: 0.5rem;
-        }
-
-        .text-overflow-ellipsis
-        {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .h-align-content
-        {
-            text-align: center;
-        }
-
-        .controls-theme > *:first-child
-        {
-            border-radius: 0.3rem 0 0 0.3rem;
-        }
-
-        .controls-theme > *:last-child
-        {
-            border-radius: 0 0.3rem 0.3rem 0;
-        }
-
-        #PlaybackControls1 > *
-        {
-            padding: 0.5rem;
-        }
-
-        #Player
-        {
-            background-color: var(--themeColor1);
-            box-shadow: 5px 5px 5px darkgray;
-        }
-
-        #NowPlayingTrack
-        {
-            color: white;
-            border-radius: 0.5rem;
-            padding: 0.3rem;
-            background-color: var(--themeColor5);
-            box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);
-        }
-
-        .controls-theme > *:nth-child(odd)
-        {
-            background-color: var(--themeColor3);
-        }
-
-        .controls-theme > *:nth-child(even)
-        {
-            background-color: var(--themeColor2);
-        }
-
-        #PlaybackProgress
-        {
-            border-radius: 0.5rem;
-            padding: 0.3rem;
-            background-color: var(--themeColor5);
-            box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);
-        }
-
-        #PlaybackProgress div
-        {
-            background-color: var(--themeColor4);
-            width: 60%;
-            height: 0.5rem;
-            border-radius: inherit;
-        }
-
-        #PlaylistContainer
-        {
-            max-width: 512px;
-            width: 100%;
-            overflow: scroll;
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-
-        #PlaylistContainer::-webkit-scrollbar
-        {
-            display: none;
-        }
-
-        #Playlist
-        {
-            background-color: black;
-            box-shadow: 5px 5px 5px darkgray;
-        }
-
-        hr
-        {
-            color: var(--themeColor4);
-        }
-
-        [data-name="PlaylistEntry"]
-        {
-            color: white;
-        }
-
-        [data-name="TrackTitle"]
-        {
-            color: var(--themeColor2) !important;
-        }
-
-        [data-name="PlayTrack"]
-        {
-            border-style: solid;
-            border-width: 0.1rem;
-            border-radius: 0.3rem;
-            border-color: var(--themeColor2);
-            color: var(--themeColor4);
-            padding: 0.3rem;
-        }
-
-        .button-hover1:hover
-        {
-            cursor: pointer;
-            color: white;
-            background-color: black;
-        }
-
-        .button-hover2:hover
-        {
-            cursor: pointer;
-            color: black;
-            background-color: white;
-        }
-
-        .selected1
-        {
-            color: white;
-            background-color: cornflowerblue;
-        }
-
-        #Notifications
-        {
-            position: fixed;
-            top: 0.2rem;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-    </style>
 </head>
 <body>
 
-    <section id="Notifications" >
+    <section id="MenuContainer" class="h-align-content" >
+        <div id="Menu" >
+            <i id="Library" title="Library" class="button-hover1 far fa-2x fa-list-alt"></i>
+            <i id="Stats" title="Stats" class="button-hover1 fas fa-2x fa-cogs"></i>
+            <i id="ClearPlaylist" title="Clear playlist" class="button-hover1 fas fa-2x fa-eraser"></i>
+        </div>
+    </section>
+
+    <section id="Notifications" class="h-align-content" >
         <i class="fa-pulse fas fa-spinner"></i>
         <span>Stalled...</span>
     </section>
@@ -298,11 +38,11 @@
 
                 <div class="flex-item-shrink" >
                     <div id="PlaybackControls1" class="flex-row-nowrap flex-items-h-center gap-row-05 controls-theme">
-                        <i id="PreviousTrack" title="Previous track" class="flex-item-shrink button-hover1 fa-2x fas fa-step-backward"></i>
+                        <i id="PreviousTrack" title="Previous track" class="flex-item-shrink radius-l-03 button-hover1 fa-2x fas fa-step-backward"></i>
                         <i id="PlayTrack" title="Play" class="flex-item-shrink button-hover1 fa-2x fas fa-play"></i> <!-- "fa-pause" for pause state -->
                         <i id="NextTrack" title="Next track" class="flex-item-shrink button-hover1 fa-2x fas fa-step-forward"></i>
                         <i id="ShufflePlay" title="Shuffle" class="flex-item-shrink button-hover1 fa-2x fas fa-random"></i>
-                        <i id="ReloadTrack" title="Re-load" class="flex-item-shrink button-hover1 fa-2x fas fa-sync"></i>
+                        <i id="ReloadTrack" title="Re-load" class="flex-item-shrink radius-r-03 button-hover1 fa-2x fas fa-sync"></i>
                     </div>
                 </div>
 
@@ -314,14 +54,14 @@
 
                     <div id="PlaybackControls2" class="flex-row-nowrap controls-theme" >
 
-                        <div id="CurrentDuration" class="flex-item-grow h-align-content font-size-15" >00:36</div>
+                        <div id="CurrentDuration" class="flex-item-grow h-align-content font-size-15 radius-l-03" >00:36</div>
 
                         <div class="flex-item-grow h-align-content">
                             <input type="range" id="Volume" max="100" min="0" value="80" step="5" title="80%" ></input>
                         </div>
 
                         <!-- "fa-volume-mute" for muted state -->
-                        <i id="Mute" title="Mute" class="flex-item-grow button-hover1 h-align-content font-size-15 fas fa-volume-up"></i>
+                        <i id="Mute" title="Mute" class="flex-item-grow button-hover1 h-align-content font-size-15 radius-r-03 fas fa-volume-up"></i>
                     </div>
 
                 </div>
@@ -329,7 +69,7 @@
 
         </section>
 
-        <section id="PlaylistContainer" class="flex-item-shrink" style="max-height: 300px; overflow: scroll; " >
+        <section id="PlaylistContainer" class="flex-item-shrink" >
 
             <div id="Playlist" class="standard-box" >
                 <hr/>
@@ -400,9 +140,151 @@
                     </div>
 
                     <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
-                </div>
+                </div><hr/>
 
-                <hr/>
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
+
+                <div data-name="PlaylistEntry" data-trackid="XXX" class="flex-row-nowrap gap-column-05" >
+                    <!-- Replace with <i class="fas fa-hourglass-half"></i> when playing -->
+                    <i data-name="PlayTrack" class="flex-item-shrink button-hover2 fa-2x fas fa-play"></i>
+
+                    <div class="flex-item-both no-min-width" >
+                        <div data-name="TrackArtist" class="text-overflow-ellipsis" ><b>Creedence Clearwater Revival</b></div>
+                        <div data-name="TrackTitle" class="text-overflow-ellipsis" >I Heard It Through the Grapevine</div>
+                    </div>
+
+                    <span class="flex-item-shrink" data-name="TrackDuration" style="align-self: flex-end;" >4:31</span>
+                </div><hr/>
             </div>
 
         </section>
