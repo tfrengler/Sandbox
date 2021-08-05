@@ -28,7 +28,8 @@
         {"code": "GLOBAL_LITERAL_VALUE_USED_TOO_OFTEN"},
         {"code": "FUNCTION_TOO_COMPLEX"},
         {"code": "LOCAL_LITERAL_VALUE_USED_TOO_OFTEN"},
-        {"code": "ARGUMENT_IS_TEMPORARY"}
+        {"code": "ARGUMENT_IS_TEMPORARY"},
+        {"code": "METHOD_IS_TEMPORARY"}
 
     ],
     "inheritParent": false,

@@ -1,0 +1,26 @@
+{
+    "testIDName": "RegTest008",
+	"testCandidates": [
+		{
+			"firstName": "Candidate_1",
+			"lastName": "<:TEST_ID_NAME:>",
+			"email": "<:TEST_ID_NAME:>_1@peoplexs.com"
+		},
+		{
+			"firstName": "Candidate_2",
+			"lastName": "<:TEST_ID_NAME:>",
+			"email": "<:DATE[TODAY+1W]:>_2@peoplexs.com"
+		},
+		{
+			"firstName": "Candidate_3",
+			"lastName": "<:TEST_ID_NAME:>",
+			"email": "<:RANDOM_NUMBER[1,100]:>_3@peoplexs.com"
+		}
+    ]
+	,
+	"email": {
+		"subject": "<:TEST_ID_NAME:> mass mail test",
+		"body": "This is 'The Great Mass Mail Regression' test"
+	},
+	"vacancy": "Vacancy <:RANDOM_STRING[10]:>"
+}
