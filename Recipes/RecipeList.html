@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recipe List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            padding: 1rem;
+            background-color: green;
+            color: white;
+            text-align: center;
+        }
+
+        #toggle-filters {
+        /* display: none; */
+            margin: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #filter-panel {
+        padding: 1rem;
+        background-color: #fff3e0;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        }
+
+        #filter-panel.hidden {
+            display: none;
+        }
+
+        .filter-group {
+            flex: 1 1 200px;
+            min-width: 200px;
+            margin-bottom: 0.2rem;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 80%;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .recipe-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .recipe-card:hover {
+            transform: scale(1.02);
+        }
+
+        .recipe-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .recipe-card h3 {
+            margin: 0;
+            padding: 1rem;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .filter-bar {
+                display: none;
+            }
+
+            #toggle-filters {
+                display: block;
+            }
+
+            #filter-panel {
+                display: block;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Delicious Recipes</h1>
+    </header>
+
+<button id="toggle-filters">🔍 Filter Recipes</button>
+
+    <section id="filter-panel" class="hidden">
+        <div class="filter-group">
+            <label for="search">Search:</label>
+            <input type="text" id="search" placeholder="e.g. Pasta, Vegan...">
+        </div>
+
+        <div class="filter-group">
+            <label for="category">Category:</label>
+            <select id="category">
+                <option value="">All</option>
+                <option value="vegan">Vegan</option>
+                <option value="dessert">Dessert</option>
+                <option value="main">Main Course</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty">
+                <option value="">All</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="recipe-grid">
+        <div class="recipe-card">
+            <img src="images/spaghetti.jpg" alt="Spaghetti Bolognese">
+            <h3>Spaghetti Bolognese</h3>
+        </div>
+        <div class="recipe-card">
+            <img src="images/vegan-bowl.jpg" alt="Vegan Power Bowl">
+            <h3>Vegan Power Bowl</h3>
+        </div>
+        <div class="recipe-card">
+            <img src="images/chocolate-cake.jpg" alt="Chocolate Cake">
+            <h3>Chocolate Cake</h3>
+        </div>
+        <!-- Add more recipe cards as needed -->
+    </section>
+
+<script>
+    // JavaScript to toggle filter panel (optional, you can replace this later)
+    document.getElementById('toggle-filters').addEventListener('click', function () {
+        const panel = document.getElementById('filter-panel');
+        panel.classList.toggle('hidden');
+    });
+</script>
+
+</body>
+</html>
