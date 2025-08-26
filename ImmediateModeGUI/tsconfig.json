@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // Output modern JavaScript
+    "module": "ES6", // Use ES module system
+    "moduleResolution": "node", // Clear rules for module resolution
+    "outDir": "./dist", // Output directory for compiled files
+    "rootDir": "./src", // Root directory of your source code
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Helpful for compatibility with common modules
+    "forceConsistentCasingInFileNames": true, // Enforces consistent casing in imports
+    "sourceMap": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true, // accessing index must always check for undefined
+    "noUnusedLocals": true, // Report errors on unused local variables.
+    "noUnusedParameters": true, // Report errors on unused parameters in functions
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "resolveJsonModule": false
+  },
+  "include": [ "src/**/*" ],
+  "exclude": [ "node_modules", "dist" ]
+}
