@@ -24,25 +24,32 @@
 
             // writeDump(HttpClient);
 
-            HttpClient = createObject('java', 'java.net.http.HttpClient');
-            URI = createObject('java', 'java.net.URI');
+            // HttpClient = createObject('java', 'java.net.http.HttpClient');
+            // URI = createObject('java', 'java.net.URI');
 
-            // writeDump();
+            // writeDump(createObject('java', 'java.net.http.WebSocket$Listener'));
             // abort;
+
             websocket = new WebSocket();
-            ws = javaCast('java.net.http.WebSocket$Listener', websocket);
+            // listenerClass = createObject("java", "java.net.http.WebSocket$Listener");
+            // writeDump(listenerClass.getClass().getName());abort;
+            // ws = CreateDynamicProxy(websocket, ['java.net.http.WebSocket$Listener']);
+            // ws = javaCast('java.net.http.WebSocket$Listener', websocket);
+            // ws = javaCast('java.lang.CharSequence', websocket);
+            // writeDump(ws);
 
-            writeDump(ws);
+            // test = HttpClient.newHttpClient()
+            //     .newWebSocketBuilder()
+            //     .buildAsync(
+            //         URI.create("wss://yourserver.com"),
+            //         websocket
+            //     )
+            //     .join();
 
-            test = HttpClient.newHttpClient()
-                .newWebSocketBuilder()
-                .buildAsync(
-                    URI.create("wss://yourserver.com"),
-                    ws
-                )
-                .join();
+            // writeDump(test);
 
-            writeDump(test);
+            classLoader = getPageContext().getConfig().getClassLoaderEnv();
+            writeDump(classLoader.loadClass('java.net.http.WebSocket$Listener'));
         </cfscript>
 
     </body>
