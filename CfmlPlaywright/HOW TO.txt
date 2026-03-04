@@ -1,0 +1,5 @@
+Install Maven
+Run "mvn package" against the pom.xml
+Copy the generated "playwright-1.xx.0-jar-with-dependencies.jar" to a folder of your liking
+Load the jar into Coldfusion
+Profit

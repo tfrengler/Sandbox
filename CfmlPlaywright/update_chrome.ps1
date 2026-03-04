@@ -1,0 +1,1 @@
+java -cp ".\playwright.jar" com.microsoft.playwright.CLI install chromium --no-shell
